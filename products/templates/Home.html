@@ -1,0 +1,886 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>GlobalMart - Premium Online Store | AliExpress Style</title>
+    <!-- Font Awesome 6 (free icons) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <!-- Google Fonts: Inter & Poppins for modern look -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f5f7fa;
+            color: #1e2a3e;
+        }
+
+        /* AliExpress style header */
+        .top-bar {
+            background: #1a1f2c;
+            color: #eee;
+            font-size: 0.75rem;
+            padding: 8px 0;
+            border-bottom: 1px solid #2d3345;
+        }
+
+        .top-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 30px;
+            flex-wrap: wrap;
+        }
+
+        .top-links a {
+            color: #ddd;
+            text-decoration: none;
+            margin-right: 20px;
+            font-size: 0.75rem;
+            transition: color 0.2s;
+        }
+
+        .top-links a:hover {
+            color: #ff6b35;
+        }
+
+        .top-badge i {
+            margin-right: 5px;
+        }
+
+        /* main header */
+        .main-header {
+            background: #ffffff;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+            padding: 15px 0;
+            border-bottom: 1px solid #e9ecef;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            padding: 0 30px;
+            gap: 20px;
+        }
+
+        .logo-area a {
+            text-decoration: none;
+        }
+
+        .logo-area h1 {
+            font-family: 'Poppins', sans-serif;
+            font-weight: 700;
+            font-size: 1.8rem;
+            background: linear-gradient(135deg, #ff6b35, #f7b05e);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            letter-spacing: -0.5px;
+        }
+
+        .logo-area p {
+            font-size: 0.7rem;
+            color: #6c757d;
+            letter-spacing: 0.5px;
+        }
+
+        .search-bar {
+            flex: 1;
+            max-width: 550px;
+            display: flex;
+            background: #fff;
+            border: 1px solid #e2e8f0;
+            border-radius: 50px;
+            overflow: hidden;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+            transition: all 0.2s;
+        }
+
+        .search-bar:hover, .search-bar:focus-within {
+            border-color: #ff6b35;
+            box-shadow: 0 0 0 2px rgba(255,107,53,0.1);
+        }
+
+        .search-bar input {
+            flex: 1;
+            padding: 12px 20px;
+            border: none;
+            outline: none;
+            font-size: 0.9rem;
+            font-weight: 400;
+        }
+
+        .search-bar button {
+            background: #ff6b35;
+            border: none;
+            padding: 0 24px;
+            color: white;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .search-bar button:hover {
+            background: #e55a2b;
+        }
+
+        .header-icons {
+            display: flex;
+            gap: 25px;
+            align-items: center;
+        }
+
+        .icon-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            font-size: 0.7rem;
+            color: #2c3e50;
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+
+        .icon-item i {
+            font-size: 1.3rem;
+            margin-bottom: 4px;
+        }
+
+        .icon-item:hover {
+            color: #ff6b35;
+        }
+
+        /* category navigation */
+        .category-nav {
+            background: white;
+            border-bottom: 1px solid #ecf0f1;
+            padding: 10px 0;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.02);
+        }
+
+        .cat-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 30px;
+            display: flex;
+            gap: 28px;
+            overflow-x: auto;
+            white-space: nowrap;
+            flex-wrap: nowrap;
+            scrollbar-width: thin;
+        }
+
+        .cat-link {
+            font-size: 0.85rem;
+            font-weight: 500;
+            color: #2c3e50;
+            text-decoration: none;
+            padding: 5px 0;
+            transition: color 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .cat-link i {
+            font-size: 0.8rem;
+            color: #ff6b35;
+        }
+
+        .cat-link:hover {
+            color: #ff6b35;
+        }
+
+        /* main content */
+        .container {
+            max-width: 1400px;
+            margin: 25px auto 50px;
+            padding: 0 30px;
+        }
+
+        /* hero banner - Aliexpress style */
+        .hero-banner {
+            background: linear-gradient(97deg, #fef5e8 0%, #fff1e4 100%);
+            border-radius: 24px;
+            padding: 35px 40px;
+            margin-bottom: 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.02);
+            border: 1px solid #ffe2cc;
+        }
+
+        .hero-text h2 {
+            font-size: 2rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #222, #ff6b35);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .hero-text p {
+            margin: 10px 0 20px;
+            color: #4a627a;
+            max-width: 500px;
+        }
+
+        .hero-btn {
+            background: #ff6b35;
+            border: none;
+            padding: 12px 32px;
+            border-radius: 40px;
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.1s, background 0.2s;
+        }
+
+        .hero-btn:hover {
+            background: #e55a2b;
+            transform: scale(1.02);
+        }
+
+        .hero-badge {
+            background: rgba(255,107,53,0.1);
+            border-radius: 100px;
+            padding: 8px 16px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            color: #ff6b35;
+        }
+
+        /* product grid - AliExpress card design */
+        .section-title {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .section-title h2 {
+            font-size: 1.6rem;
+            font-weight: 600;
+            letter-spacing: -0.3px;
+            position: relative;
+            display: inline-block;
+        }
+
+        .section-title h2:after {
+            content: '';
+            position: absolute;
+            bottom: -8px;
+            left: 0;
+            width: 50px;
+            height: 3px;
+            background: #ff6b35;
+            border-radius: 4px;
+        }
+
+        .view-all {
+            color: #ff6b35;
+            font-weight: 500;
+            text-decoration: none;
+            font-size: 0.85rem;
+        }
+
+        .products-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+            gap: 28px;
+            margin-top: 10px;
+        }
+
+        /* product card modern - now with proper anchor styling for navigation */
+        .product-card-link {
+            text-decoration: none;
+            color: inherit;
+            display: block;
+        }
+
+        .product-card {
+            background: white;
+            border-radius: 20px;
+            overflow: hidden;
+            transition: all 0.25s ease;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.02), 0 1px 2px rgba(0,0,0,0.05);
+            border: 1px solid #edf2f7;
+            cursor: pointer;
+            position: relative;
+            height: 100%;
+        }
+
+        .product-card:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 20px 30px -12px rgba(0,0,0,0.12);
+            border-color: #ffe0d0;
+        }
+
+        .product-img {
+            background: #fafcff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px 20px 12px;
+            height: 220px;
+            position: relative;
+        }
+
+        .product-img img {
+            max-width: 100%;
+            max-height: 180px;
+            object-fit: contain;
+            transition: transform 0.2s;
+        }
+
+        .product-card:hover .product-img img {
+            transform: scale(1.02);
+        }
+
+        .discount-badge {
+            position: absolute;
+            top: 12px;
+            left: 12px;
+            background: #ff4d4f;
+            color: white;
+            font-size: 0.7rem;
+            font-weight: 700;
+            padding: 4px 10px;
+            border-radius: 20px;
+            z-index: 2;
+        }
+
+        .product-info {
+            padding: 16px 16px 20px;
+        }
+
+        .product-title {
+            font-size: 0.95rem;
+            font-weight: 600;
+            line-height: 1.4;
+            margin-bottom: 8px;
+            color: #1e293b;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .price-row {
+            display: flex;
+            align-items: baseline;
+            gap: 12px;
+            margin: 12px 0 8px;
+            flex-wrap: wrap;
+        }
+
+        .current-price {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #ff4d4f;
+        }
+
+        .currency {
+            font-size: 0.9rem;
+        }
+
+        .old-price {
+            font-size: 0.8rem;
+            color: #94a3b8;
+            text-decoration: line-through;
+        }
+
+        .free-shipping {
+            color: #0f7b3a;
+            background: #e6f7ec;
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 30px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            margin-top: 6px;
+        }
+
+        .rating {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            margin: 8px 0 4px;
+        }
+
+        .stars {
+            color: #ffb800;
+            font-size: 0.7rem;
+            letter-spacing: 2px;
+        }
+
+        .review-count {
+            font-size: 0.7rem;
+            color: #5b6e8c;
+        }
+
+        /* empty state */
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            background: white;
+            border-radius: 32px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+        }
+
+        .empty-state i {
+            font-size: 3rem;
+            color: #cbd5e1;
+            margin-bottom: 15px;
+        }
+
+        /* footer aliexpress style */
+        .footer {
+            background: #1a1f2c;
+            color: #adb7c6;
+            margin-top: 60px;
+            padding: 40px 0 25px;
+        }
+
+        .footer-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 30px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px,1fr));
+            gap: 30px;
+        }
+
+        .footer-col h4 {
+            color: white;
+            margin-bottom: 18px;
+            font-size: 1rem;
+        }
+
+        .footer-col p, .footer-col a {
+            color: #9aa3b5;
+            text-decoration: none;
+            font-size: 0.8rem;
+            display: block;
+            margin-bottom: 10px;
+        }
+
+        .copyright {
+            text-align: center;
+            padding-top: 35px;
+            font-size: 0.7rem;
+            border-top: 1px solid #2d3345;
+            margin-top: 20px;
+        }
+
+        @media (max-width: 768px) {
+            .header-container { flex-direction: column; align-items: stretch; }
+            .search-bar { max-width: 100%; }
+            .products-grid { gap: 16px; }
+            .hero-banner { text-align: center; justify-content: center; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- Top bar: AliExpress style -->
+<div class="top-bar">
+    <div class="top-container">
+        <div class="top-links">
+            <a href="#">Seller Portal</a>
+            <a href="#">Help</a>
+            <a href="#">Download App</a>
+        </div>
+        <div class="top-badge">
+            <i class="fas fa-globe"></i> Ship to Nigeria <i class="fas fa-chevron-down"></i>
+        </div>
+    </div>
+</div>
+
+<!-- Main Header -->
+<div class="main-header">
+    <div class="header-container">
+        <div class="logo-area">
+            <a href="/">
+                <h1>GlobalMart</h1>
+                <p>✨ Official Store | Fast Shipping</p>
+            </a>
+        </div>
+        <div class="search-bar">
+            <input type="text" placeholder="Search products, brands, and more..." id="searchInput">
+            <button id="searchBtn"><i class="fas fa-search"></i></button>
+        </div>
+        <div class="header-icons">
+        {% if user.is_authenticated %}
+            <a href="{% url 'dashboard' %}" class="icon-item">
+                <i class="fas fa-user"></i>
+                <span> {{ user.name }} </span>
+            </a>
+            <a href="{% url 'logout' %}" class="icon-item">
+                <i class="fas fa-sign-out-alt"></i>
+                <span>Logout</span>
+            </a>
+        {% else %}
+            <a href="{% url 'login' %}" class="icon-item">
+                <i class="fas fa-sign-in-alt"></i>
+                <span>Login</span>
+            </a>
+            <a href="{% url 'signup' %}" class="icon-item">
+                <i class="fas fa-user-plus"></i>
+                <span>Sign Up</span>
+            </a>
+        {% endif %}
+            <a href="#" class="icon-item">
+                <i class="fas fa-heart"></i>
+                <span>Wishlist</span>
+            </a>
+            <a href="#" class="icon-item">
+                <i class="fas fa-shopping-cart"></i>
+                <span>Cart</span>
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Category Navigation -->
+<div class="category-nav">
+    <div class="cat-container">
+        <a href="#" class="cat-link"><i class="fas fa-mobile-alt"></i> Electronics</a>
+        <a href="#" class="cat-link"><i class="fas fa-tshirt"></i> Fashion</a>
+        <a href="#" class="cat-link"><i class="fas fa-home"></i> Home & Garden</a>
+        <a href="#" class="cat-link"><i class="fas fa-shoe-prints"></i> Shoes</a>
+        <a href="#" class="cat-link"><i class="fas fa-gem"></i> Jewelry</a>
+        <a href="#" class="cat-link"><i class="fas fa-futbol"></i> Sports</a>
+        <a href="#" class="cat-link"><i class="fas fa-car"></i> Auto</a>
+        <a href="#" class="cat-link"><i class="fas fa-baby-carriage"></i> Baby Products</a>
+        <a href="#" class="cat-link"><i class="fas fa-microchip"></i> Smart Devices</a>
+    </div>
+</div>
+
+<!-- Main container -->
+<div class="container">
+    <!-- Hero Banner Aliexpress style -->
+    <div class="hero-banner">
+        <div class="hero-text">
+            <div class="hero-badge"><i class="fas fa-tag"></i> MEGA SALE - Up to 70% OFF</div>
+            <h2>Big Ramadan Deals</h2>
+            <p>Free shipping on orders over ₦40,000 | Limited time offer</p>
+            <button class="hero-btn" id="flashBtn">Shop Now <i class="fas fa-arrow-right"></i></button>
+        </div>
+        <div>
+            <i class="fas fa-shopping-bag" style="font-size: 80px; color:#ff6b35; opacity:0.7;"></i>
+        </div>
+    </div>
+
+    <!-- Products section - RENDERED DIRECTLY FROM BACKEND VARIABLE 'products' -->
+    <!-- 
+        ============================================================
+        SINGLE PRODUCT PAGE INTEGRATION
+        
+        Each product card is wrapped in an <a> tag that links to your 
+        Singleproduct.html page with the product ID as a URL parameter.
+        
+        Your backend views should handle:
+        - product.get_absolute_url or product.id for the link
+        - All other product fields (name, price, description, image, etc.)
+        
+        The URL structure: /product/<product_id>/  or /singleproduct/?id=<product_id>
+        Adjust the 'product_url' or href pattern below to match your actual 
+        Singleproduct.html URL configuration.
+        ============================================================
+    -->
+    
+    <div class="section-title">
+        <h2>🔥 Just For You</h2>
+        <a href="#" class="view-all" id="viewAllLink">View all <i class="fas fa-angle-right"></i></a>
+    </div>
+    
+    <div id="productGrid" class="products-grid">
+        <!-- Backend products rendered here using Django template syntax -->
+        <!-- Each product is wrapped in an anchor tag that links to Singleproduct.html with product ID -->
+        {% for product in products %}
+            <a href="{% url 'single_product' product.id %}" class="product-card-link">
+                <div class="product-card" data-product-id="{{ product.id }}">
+                    <div class="product-img">
+                        {% if product.oldPrice or product.price_was %}
+                            {% with discount_percent=product.discount_percent|default:"" %}
+                                {% if discount_percent %}
+                                    <span class="discount-badge">-{{ discount_percent }}%</span>
+                                {% elif product.oldPrice %}
+                                    <span class="discount-badge">SALE</span>
+                                {% endif %}
+                            {% endwith %}
+                        {% endif %}
+                        {% if product.image %}
+                            <img src="{{ product.image.url }}" alt="{{ product.name }}" loading="lazy">
+                        {% else %}
+                            <img src="https://picsum.photos/id/{{ forloop.counter|add:20 }}/300/300" alt="{{ product.name }}" loading="lazy">
+                        {% endif %}
+                    </div>
+                    <div class="product-info">
+                        <div class="product-title">{{ product.name }}</div>
+                        
+                        {% if product.rating or product.reviews %}
+                        <div class="rating">
+                            <span class="stars">
+                                {% with rating_val=product.rating|default:4.5 %}
+                                    {% for i in "12345"|make_list %}
+                                        {% if forloop.counter <= rating_val|floatformat:"0"|add:"0" %}
+                                            <i class="fas fa-star"></i>
+                                        {% elif forloop.counter <= rating_val|add:"0.5"|floatformat:"0"|add:"0" and rating_val|slugify != rating_val|floatformat:"0" %}
+                                            <i class="fas fa-star-half-alt"></i>
+                                        {% else %}
+                                            <i class="far fa-star"></i>
+                                        {% endif %}
+                                    {% endfor %}
+                                {% endwith %}
+                            </span>
+                            <span class="review-count">{{ product.reviews|default:"200+" }} sold</span>
+                        </div>
+                        {% endif %}
+                        
+                        <div class="price-row">
+                            <span class="current-price"><span class="currency">₦</span>{{ product.price|floatformat:0 }}</span>
+                            {% if product.oldPrice %}
+                                <span class="old-price">₦{{ product.oldPrice|floatformat:0 }}</span>
+                            {% endif %}
+                        </div>
+                        
+                        {% if product.shipping or product.free_shipping %}
+                            <div class="free-shipping"><i class="fas fa-truck"></i> {{ product.shipping|default:"Free Shipping" }}</div>
+                        {% else %}
+                            <div class="free-shipping"><i class="fas fa-check-circle"></i> Ready to ship</div>
+                        {% endif %}
+                        
+                        <p style="font-size:0.7rem; color:#6c757d; margin-top:8px;">{{ product.description|truncatechars:65 }}</p>
+                    </div>
+                </div>
+            </a>
+        {% empty %}
+            <div class="empty-state">
+                <i class="fas fa-box-open"></i>
+                <p>No products available yet. Check back soon!</p>
+            </div>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- Footer -->
+<div class="footer">
+    <div class="footer-container">
+        <div class="footer-col">
+            <h4>Customer Care</h4>
+            <p>Help Center</p>
+            <p>Returns & Refunds</p>
+            <p>Shipping Info</p>
+        </div>
+        <div class="footer-col">
+            <h4>GlobalMart</h4>
+            <p>About Us</p>
+            <p>Affiliate Program</p>
+            <p>Seller Hub</p>
+        </div>
+        <div class="footer-col">
+            <h4>Payment</h4>
+            <p><i class="fab fa-cc-visa"></i> Visa / Mastercard</p>
+            <p><i class="fas fa-mobile-alt"></i> USSD / Bank Transfer</p>
+            <p>Pay on Delivery</p>
+        </div>
+        <div class="footer-col">
+            <h4>Follow Us</h4>
+            <p><i class="fab fa-facebook"></i> Facebook</p>
+            <p><i class="fab fa-instagram"></i> Instagram</p>
+            <p><i class="fab fa-twitter"></i> Twitter</p>
+        </div>
+    </div>
+    <div class="copyright">© 2025 GlobalMart | Express eCommerce inspired by AliExpress | Nigeria</div>
+</div>
+
+<!-- JavaScript for search, filtering, and client-side enhancements -->
+<script>
+    // Helper: format number with commas (Naira style)
+    function formatNumber(num) {
+        if (!num && num !== 0) return '0';
+        return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+    }
+    
+    // Update any price displays that need comma formatting (runs on page load)
+    function formatAllPrices() {
+        document.querySelectorAll('.current-price').forEach(el => {
+            let rawText = el.innerText;
+            let match = rawText.match(/₦([0-9,]+)/);
+            if (match) {
+                let num = match[1].replace(/,/g, '');
+                if (!isNaN(num) && num !== '') {
+                    el.innerHTML = `<span class="currency">₦</span>${formatNumber(parseInt(num))}`;
+                }
+            }
+        });
+        document.querySelectorAll('.old-price').forEach(el => {
+            let rawText = el.innerText;
+            let match = rawText.match(/₦([0-9,]+)/);
+            if (match) {
+                let num = match[1].replace(/,/g, '');
+                if (!isNaN(num) && num !== '') {
+                    el.innerText = `₦${formatNumber(parseInt(num))}`;
+                }
+            }
+        });
+    }
+    
+    // Search functionality that filters products based on backend-rendered cards
+    const searchInput = document.getElementById('searchInput');
+    const searchBtn = document.getElementById('searchBtn');
+    const productGrid = document.getElementById('productGrid');
+    const viewAllLink = document.getElementById('viewAllLink');
+    
+    // Store original products HTML (snapshot of all products from backend)
+    let originalProductsHTML = '';
+    
+    // Capture initial state when page loads
+    function captureOriginalProducts() {
+        if (productGrid) {
+            // Get all product card links (the anchors wrapping cards)
+            const cards = productGrid.querySelectorAll('.product-card-link');
+            if (cards.length > 0) {
+                originalProductsHTML = productGrid.innerHTML;
+            }
+        }
+    }
+    
+    function filterProductsBySearch() {
+        const query = searchInput.value.trim().toLowerCase();
+        if (!productGrid) return;
+        
+        if (query === "") {
+            // Restore all products
+            if (originalProductsHTML) {
+                productGrid.innerHTML = originalProductsHTML;
+                formatAllPrices();
+            }
+            return;
+        }
+        
+        // Get current product card links
+        const cards = productGrid.querySelectorAll('.product-card-link');
+        if (cards.length === 0) return;
+        
+        let visibleCount = 0;
+        cards.forEach(card => {
+            const title = card.querySelector('.product-title')?.innerText.toLowerCase() || '';
+            const descElem = card.querySelector('.product-info p:last-of-type');
+            const desc = descElem ? descElem.innerText.toLowerCase() : '';
+            
+            if (title.includes(query) || desc.includes(query)) {
+                card.style.display = '';
+                visibleCount++;
+            } else {
+                card.style.display = 'none';
+            }
+        });
+        
+        // Show empty state if no results
+        if (visibleCount === 0) {
+            const existingEmpty = productGrid.querySelector('.empty-state');
+            if (!existingEmpty) {
+                // Hide all cards first
+                cards.forEach(c => c.style.display = 'none');
+                const emptyDiv = document.createElement('div');
+                emptyDiv.className = 'empty-state';
+                emptyDiv.id = 'dynamicEmptyState';
+                emptyDiv.innerHTML = `<i class="fas fa-search"></i><p>No matching products for "${escapeHtml(query)}"</p><button id="resetSearchBtn" style="margin-top:12px; background:#ff6b35; border:none; padding:8px 24px; border-radius:40px; color:white; cursor:pointer;">Clear search</button>`;
+                productGrid.appendChild(emptyDiv);
+                
+                const resetBtn = document.getElementById('resetSearchBtn');
+                if (resetBtn) {
+                    resetBtn.onclick = () => {
+                        searchInput.value = '';
+                        if (originalProductsHTML) {
+                            productGrid.innerHTML = originalProductsHTML;
+                            formatAllPrices();
+                        }
+                    };
+                }
+            }
+        } else {
+            const emptyStateDiv = productGrid.querySelector('#dynamicEmptyState');
+            if (emptyStateDiv) emptyStateDiv.remove();
+        }
+    }
+    
+    function escapeHtml(str) {
+        return str.replace(/[&<>]/g, function(m) {
+            if(m === '&') return '&amp;';
+            if(m === '<') return '&lt;';
+            if(m === '>') return '&gt;';
+            return m;
+        });
+    }
+    
+    // Flash sale button: sort by price (low to high) as a fun interactive feature
+    const flashBtn = document.getElementById('flashBtn');
+    if (flashBtn) {
+        flashBtn.addEventListener('click', function() {
+            const container = productGrid;
+            const cards = Array.from(container.querySelectorAll('.product-card-link'));
+            if (cards.length > 1) {
+                // Sort by current price (low to high)
+                cards.sort((a, b) => {
+                    const priceA = parseInt(a.querySelector('.current-price')?.innerText.replace(/[^0-9]/g, '') || '0');
+                    const priceB = parseInt(b.querySelector('.current-price')?.innerText.replace(/[^0-9]/g, '') || '0');
+                    return priceA - priceB;
+                });
+                cards.forEach(card => container.appendChild(card));
+            }
+            // Scroll to products
+            document.querySelector('.section-title')?.scrollIntoView({ behavior: 'smooth' });
+            flashBtn.style.transform = 'scale(0.97)';
+            setTimeout(() => { if(flashBtn) flashBtn.style.transform = ''; }, 150);
+        });
+    }
+    
+    // View All: reset search input and restore original order
+    if (viewAllLink) {
+        viewAllLink.addEventListener('click', (e) => {
+            e.preventDefault();
+            if (searchInput) searchInput.value = '';
+            if (originalProductsHTML) {
+                productGrid.innerHTML = originalProductsHTML;
+                formatAllPrices();
+            }
+        });
+    }
+    
+    // Initialize event listeners
+    if (searchBtn) searchBtn.addEventListener('click', filterProductsBySearch);
+    if (searchInput) searchInput.addEventListener('keyup', (e) => { if(e.key === 'Enter') filterProductsBySearch(); });
+    
+    // Wait for DOM to fully load and then capture products rendered by Django
+    window.addEventListener('DOMContentLoaded', () => {
+        setTimeout(() => {
+            captureOriginalProducts();
+            formatAllPrices();
+        }, 100);
+    });
+</script>
+
+
+</body>
+</html>
