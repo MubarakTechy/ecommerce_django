@@ -1,15 +1,676 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+  <title>Dashboard | GlobalMart Redesign</title>
+  <!-- Font Awesome 6 -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <!-- Google Fonts: Inter & Outfit -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700&family=Outfit:wght@500;600;700&display=swap" rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: #f5f7fc;
+      color: #0f1825;
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* modern scrollbar */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #f1f5f9;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 20px;
+    }
+
+    /* Header */
+    .main-header {
+      background: rgba(255,255,255,0.8);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      box-shadow: 0 4px 20px rgba(0,0,0,0.02);
+      padding: 14px 0;
+      position: sticky;
+      top: 0;
+      z-index: 120;
+      border-bottom: 1px solid rgba(226, 232, 240, 0.6);
+    }
+
+    .header-container {
+      max-width: 1440px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0 32px;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .logo-icon {
+      background: linear-gradient(135deg, #f97316, #f59e0b);
+      width: 36px;
+      height: 36px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 1.2rem;
+      box-shadow: 0 8px 18px rgba(249,115,22,0.25);
+    }
+
+    .logo h1 {
+      font-family: 'Outfit', sans-serif;
+      font-weight: 700;
+      font-size: 1.7rem;
+      background: linear-gradient(135deg, #1e293b, #334155);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      letter-spacing: -0.5px;
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 28px;
+      align-items: center;
+    }
+
+    .nav-links a {
+      color: #334155;
+      text-decoration: none;
+      font-weight: 500;
+      font-size: 0.95rem;
+      transition: 0.2s;
+      padding: 8px 0;
+      border-bottom: 2px solid transparent;
+    }
+
+    .nav-links a:hover {
+      color: #f97316;
+      border-bottom-color: #f97316;
+    }
+
+    .mobile-menu-toggle {
+      display: none;
+      background: white;
+      border: none;
+      font-size: 1.6rem;
+      color: #1e293b;
+      cursor: pointer;
+      padding: 8px 10px;
+      border-radius: 12px;
+      background: #f8fafc;
+    }
+
+    /* Dashboard wrapper */
+    .dashboard-wrapper {
+      max-width: 1440px;
+      margin: 30px auto;
+      padding: 0 32px;
+    }
+
+    .dashboard-grid {
+      display: grid;
+      grid-template-columns: 300px 1fr;
+      gap: 32px;
+      align-items: start;
+    }
+
+    /* SIDEBAR - modern glass card */
+    .sidebar {
+      background: white;
+      border-radius: 28px;
+      box-shadow: 0 20px 35px rgba(0,0,0,0.03), 0 1px 2px rgba(0,0,0,0.04);
+      border: 1px solid #edf2f9;
+      overflow: hidden;
+      position: sticky;
+      top: 100px;
+      transition: all 0.25s ease;
+    }
+
+    .sidebar-close {
+      display: none;
+      position: absolute;
+      right: 18px;
+      top: 18px;
+      background: #f1f5f9;
+      border: none;
+      border-radius: 10px;
+      width: 32px;
+      height: 32px;
+      font-size: 1.2rem;
+      color: #475569;
+      cursor: pointer;
+    }
+
+    .user-info {
+      text-align: center;
+      padding: 32px 20px 22px;
+      background: linear-gradient(180deg, #fff7ed 0%, #ffffff 100%);
+    }
+
+    .avatar {
+      width: 80px;
+      height: 80px;
+      background: linear-gradient(145deg, #f97316, #fb923c);
+      border-radius: 28px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 16px;
+      box-shadow: 0 14px 24px rgba(249,115,22,0.2);
+    }
+
+    .avatar i {
+      font-size: 38px;
+      color: white;
+    }
+
+    .user-info h4 {
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: #0f172a;
+    }
+
+    .user-info p {
+      font-size: 0.8rem;
+      color: #64748b;
+      background: #f1f5f9;
+      padding: 4px 12px;
+      border-radius: 30px;
+      display: inline-block;
+      margin-top: 6px;
+    }
+
+    .nav-menu {
+      padding: 10px 16px 20px;
+    }
+
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 13px 18px;
+      color: #334155;
+      text-decoration: none;
+      font-weight: 500;
+      border-radius: 16px;
+      margin-bottom: 6px;
+      transition: all 0.2s ease;
+      cursor: pointer;
+    }
+
+    .nav-item i {
+      width: 22px;
+      font-size: 1.2rem;
+      color: #64748b;
+      transition: 0.2s;
+    }
+
+    .nav-item:hover {
+      background: #fff7ed;
+      color: #f97316;
+    }
+
+    .nav-item:hover i {
+      color: #f97316;
+    }
+
+    .nav-item.active {
+      background: #fff7ed;
+      color: #f97316;
+      font-weight: 600;
+      box-shadow: inset 0 0 0 1px rgba(249,115,22,0.2);
+    }
+
+    .nav-item.active i {
+      color: #f97316;
+    }
+
+    .sidebar-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(15,23,42,0.5);
+      backdrop-filter: blur(4px);
+      z-index: 110;
+    }
+
+    /* MAIN CONTENT */
+    .main-content {
+      background: white;
+      border-radius: 28px;
+      box-shadow: 0 20px 35px rgba(0,0,0,0.03);
+      border: 1px solid #edf2f9;
+      padding: 30px;
+    }
+
+    .welcome-banner {
+      background: linear-gradient(105deg, #0f172a 0%, #1e293b 100%);
+      border-radius: 24px;
+      padding: 28px 32px;
+      margin-bottom: 32px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 20px;
+    }
+
+    .welcome-text h2 {
+      color: white;
+      font-size: 1.6rem;
+      font-weight: 700;
+      letter-spacing: -0.3px;
+    }
+
+    .welcome-text p {
+      color: #cbd5e1;
+      margin-top: 6px;
+    }
+
+    .logout-btn {
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.2);
+      padding: 12px 28px;
+      border-radius: 40px;
+      color: white;
+      font-weight: 600;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      backdrop-filter: blur(8px);
+      transition: 0.25s;
+    }
+
+    .logout-btn:hover {
+      background: #f97316;
+      border-color: #f97316;
+    }
+
+    .panel {
+      display: none;
+    }
+
+    .panel.active-panel {
+      display: block;
+      animation: fadeSlide 0.3s ease;
+    }
+
+    @keyframes fadeSlide {
+      0% { opacity: 0.4; transform: translateY(8px); }
+      100% { opacity: 1; transform: translateY(0); }
+    }
+
+    .panel h3 {
+      font-size: 1.5rem;
+      font-weight: 700;
+      margin-bottom: 24px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      color: #0f172a;
+    }
+
+    .panel h3 i {
+      color: #f97316;
+      font-size: 1.6rem;
+    }
+
+    .orders-table {
+      width: 100%;
+      border-collapse: collapse;
+      background: #f9fafb;
+      border-radius: 20px;
+      overflow: hidden;
+    }
+
+    .orders-table th {
+      background: #f1f5f9;
+      font-weight: 600;
+      padding: 16px;
+      text-align: left;
+      color: #334155;
+    }
+
+    .orders-table td {
+      padding: 16px;
+      border-bottom: 1px solid #edf2f9;
+    }
+
+    .status-badge {
+      padding: 6px 14px;
+      border-radius: 30px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+
+    .status-pending { background: #fef9c3; color: #b45309; }
+    .status-delivered { background: #dcfce7; color: #166534; }
+    .status-cancelled { background: #fee2e2; color: #b91c1c; }
+
+    .cart-item, .wishlist-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 18px 0;
+      border-bottom: 1px solid #f1f5f9;
+    }
+
+    .remove-cart-btn, .remove-wishlist-btn {
+      background: #fff1f0;
+      border: none;
+      padding: 8px 18px;
+      border-radius: 30px;
+      color: #b91c1c;
+      font-weight: 600;
+      cursor: pointer;
+      transition: 0.2s;
+      text-decoration: none;
+      font-size: 0.8rem;
+    }
+
+    .cart-total {
+      margin-top: 24px;
+      background: #f8fafc;
+      padding: 18px 24px;
+      border-radius: 18px;
+      font-weight: 700;
+      font-size: 1.2rem;
+    }
+
+    .form-group {
+      margin-bottom: 22px;
+    }
+
+    .form-group input {
+      width: 100%;
+      max-width: 400px;
+      padding: 14px 18px;
+      border: 1.5px solid #e2e8f0;
+      border-radius: 16px;
+      font-family: inherit;
+      transition: 0.2s;
+    }
+
+    .form-group input:focus {
+      border-color: #f97316;
+      box-shadow: 0 0 0 3px rgba(249,115,22,0.1);
+      outline: none;
+    }
+
+    .save-btn {
+      background: #0f172a;
+      color: white;
+      border: none;
+      padding: 14px 32px;
+      border-radius: 40px;
+      font-weight: 700;
+      cursor: pointer;
+      background: #f97316;
+      transition: 0.2s;
+    }
+
+    .save-btn:hover {
+      background: #ea580c;
+    }
+
+    .footer {
+      text-align: center;
+      padding: 28px;
+      color: #64748b;
+      margin-top: 40px;
+    }
+
+    @media (max-width: 968px) {
+      .dashboard-grid {
+        grid-template-columns: 1fr;
+      }
+      .sidebar {
+        position: fixed;
+        left: -320px;
+        top: 0;
+        width: 300px;
+        height: 100vh;
+        z-index: 130;
+        border-radius: 0 24px 24px 0;
+      }
+      .sidebar.open {
+        left: 0;
+      }
+      .sidebar-close {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .mobile-menu-toggle {
+        display: block;
+      }
+      .sidebar-overlay.active {
+        display: block;
+      }
+    }
+  </style>
 </head>
 <body>
-    <h1>Dashboard</h1>
+  <header class="main-header">
+    <div class="header-container">
+      <button class="mobile-menu-toggle" id="mobileMenuToggle"><i class="fas fa-bars"></i></button>
+      <div class="logo">
+        <div class="logo-icon"><i class="fas fa-globe"></i></div>
+        <h1>GlobalMart</h1>
+      </div>
+      <nav class="nav-links">
+        <a href="/"><i class="fas fa-home"></i> Home</a>
+        <a href="/shop/"><i class="fas fa-store"></i> Shop</a>
+      </nav>
+    </div>
+  </header>
 
-    <p>Welcome to your dashboard! {{ user.username }}</p>
-    <a href="{% url 'logout' %}">Logout</a>
-    
+  <div class="dashboard-wrapper">
+    <div class="dashboard-grid">
+      <aside class="sidebar" id="dashboardSidebar">
+        <button class="sidebar-close" id="sidebarClose"><i class="fas fa-times"></i></button>
+        <div class="user-info">
+          <div class="avatar"><i class="fas fa-user-astronaut"></i></div>
+          <h4>{{ user.username }}</h4>
+          <p>{{ user.email }}</p>
+        </div>
+        <div class="nav-menu">
+          <div class="nav-item active" data-panel="orders"><i class="fas fa-box-open"></i> Orders</div>
+          <div class="nav-item" data-panel="cart"><i class="fas fa-shopping-bag"></i> Cart</div>
+          <div class="nav-item" data-panel="wishlist"><i class="fas fa-heart"></i> Wishlist</div>
+          <div class="nav-item" data-panel="profile"><i class="fas fa-sliders-h"></i> Profile Settings</div>
+        </div>
+      </aside>
+      <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+      <main class="main-content">
+        <div class="welcome-banner">
+          <div class="welcome-text">
+            <h2>👋 Welcome back, {{ user.username }}</h2>
+            <p>Manage your orders, cart & wishlist effortlessly.</p>
+          </div>
+          <a href="{% url 'logout' %}" class="logout-btn"><i class="fas fa-sign-out-alt"></i> Logout</a>
+        </div>
+
+        <!-- Orders Panel -->
+        <div id="panel-orders" class="panel active-panel">
+          <h3><i class="fas fa-truck-fast"></i> My Orders</h3>
+          {% if orders %}
+          <div style="overflow-x: auto;">
+            <table class="orders-table">
+              <thead><tr><th>Product</th><th>Price</th><th>Date</th><th>Status</th></tr></thead>
+              <tbody>
+                {% for order in orders %}
+                <tr>
+                  <td><strong>{{ order.product.name }}</strong></td>
+                  <td>${{ order.price|floatformat:0 }}</td>
+                  <td>{{ order.date|date:"Y-m-d"|default:order.created_at|date:"Y-m-d" }}</td>
+                  <td><span class="status-badge status-{{ order.status|lower }}">{{ order.status }}</span></td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+          {% else %}
+          <div class="empty-msg"><i class="fas fa-box-open"></i><p>No orders yet.</p></div>
+          {% endif %}
+        </div>
+
+        <!-- Cart Panel -->
+        <div id="panel-cart" class="panel">
+          <h3><i class="fas fa-cart-shopping"></i> Shopping Cart</h3>
+          {% if cart_items %}
+          <div id="cart-list-container">
+            {% for item in cart_items %}
+            <div class="cart-item">
+              <div><strong>{{ item.product.name }}</strong><br><span>${{ item.product.price|floatformat:0 }} × {{ item.quantity }}</span></div>
+              <a href="{% url 'remove_from_cart' item.id %}" class="remove-cart-btn"><i class="fas fa-trash"></i> Remove</a>
+            </div>
+            {% endfor %}
+          </div>
+          <div class="cart-total">Total: ${{ cart_total|floatformat:0 }}</div>
+          {% else %}
+          <div class="empty-msg"><i class="fas fa-cart-shopping"></i><p>Cart is empty.</p></div>
+          {% endif %}
+        </div>
+
+        <!-- Wishlist Panel -->
+        <div id="panel-wishlist" class="panel">
+          <h3><i class="fas fa-heart"></i> Wishlist</h3>
+          {% if wishlist_items %}
+          <div id="wishlist-container">
+            {% for item in wishlist_items %}
+            <div class="wishlist-item">
+              <div><strong>{{ item.product.name }}</strong> — ₦{{ item.product.price|floatformat:0 }}</div>
+              <a href="{% url 'remove_from_wishlist' item.id %}" class="remove-wishlist-btn">Remove</a>
+            </div>
+            {% endfor %}
+          </div>
+          {% else %}
+          <div class="empty-msg"><i class="far fa-heart"></i><p>Wishlist empty.</p></div>
+          {% endif %}
+        </div>
+
+        <!-- Profile Panel -->
+        <div id="panel-profile" class="panel">
+          <h3><i class="fas fa-user-cog"></i> Profile Settings</h3>
+          <form method="post" action="{% url 'update_profile' %}" id="profileForm">
+            {% csrf_token %}
+            <div class="form-group"><label>Username</label><input type="text" name="username" value="{{ user.username }}"></div>
+            <div class="form-group"><label>New Password</label><input type="password" name="new_password"></div>
+            <div class="form-group"><label>Confirm Password</label><input type="password" name="confirm_password"></div>
+            <button type="submit" class="save-btn"><i class="fas fa-save"></i> Save Changes</button>
+          </form>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <div class="footer">
+    <p>© 2025 GlobalMart — Redesigned dashboard experience</p>
+  </div>
+
+  <script>
+    (function() {
+      const panels = document.querySelectorAll('.panel');
+      const navItems = document.querySelectorAll('.nav-item');
+      const sidebar = document.getElementById('dashboardSidebar');
+      const overlay = document.getElementById('sidebarOverlay');
+      const menuToggle = document.getElementById('mobileMenuToggle');
+      const sidebarClose = document.getElementById('sidebarClose');
+
+      function activatePanel(panelId) {
+        panels.forEach(p => p.classList.remove('active-panel'));
+        document.getElementById(`panel-${panelId}`)?.classList.add('active-panel');
+        navItems.forEach(n => {
+          n.classList.remove('active');
+          if (n.dataset.panel === panelId) n.classList.add('active');
+        });
+        if (window.innerWidth <= 968) closeSidebar();
+      }
+
+      navItems.forEach(item => {
+        item.addEventListener('click', (e) => {
+          e.preventDefault();
+          activatePanel(item.dataset.panel);
+        });
+      });
+
+      function openSidebar() { sidebar.classList.add('open'); overlay.classList.add('active'); }
+      function closeSidebar() { sidebar.classList.remove('open'); overlay.classList.remove('active'); }
+
+      menuToggle?.addEventListener('click', openSidebar);
+      sidebarClose?.addEventListener('click', closeSidebar);
+      overlay?.addEventListener('click', closeSidebar);
+
+      // AJAX remove handlers (cart / wishlist)
+      document.querySelectorAll('.remove-cart-btn').forEach(btn => {
+        btn.addEventListener('click', async function(e) {
+          e.preventDefault();
+          const url = this.href;
+          const res = await fetch(url, { method: 'GET' });
+          if (res.ok) this.closest('.cart-item')?.remove();
+        });
+      });
+
+      document.querySelectorAll('.remove-wishlist-btn').forEach(btn => {
+        btn.addEventListener('click', async function(e) {
+          e.preventDefault();
+          const url = this.href;
+          const res = await fetch(url, { method: 'GET' });
+          if (res.ok) this.closest('.wishlist-item')?.remove();
+        });
+      });
+
+      const profileForm = document.getElementById('profileForm');
+      if (profileForm) {
+        profileForm.addEventListener('submit', async function(e) {
+          e.preventDefault();
+          const formData = new FormData(this);
+          const res = await fetch(this.action, {
+            method: 'POST',
+            body: formData,
+            headers: { 'X-CSRFToken': getCookie('csrftoken') }
+          });
+          const data = await res.json();
+          alert(data.success ? 'Profile updated!' : (data.error || 'Error'));
+        });
+      }
+
+      function getCookie(name) {
+        let value = null;
+        if (document.cookie) {
+          document.cookie.split(';').forEach(c => {
+            const trimmed = c.trim();
+            if (trimmed.startsWith(name + '=')) value = decodeURIComponent(trimmed.substring(name.length+1));
+          });
+        }
+        return value;
+      }
+    })();
+  </script>
 </body>
 </html>

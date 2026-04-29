@@ -139,7 +139,6 @@
             max-width: 480px;
             width: 100%;
             overflow: hidden;
-            transition: transform 0.2s;
         }
 
         .login-header {
@@ -219,7 +218,11 @@
             border-color: #cbd5e1;
         }
 
-        /* Password toggle */
+        /* Password toggle - pure CSS, no JS needed */
+        .password-wrapper {
+            position: relative;
+        }
+
         .password-toggle {
             position: absolute;
             right: 16px;
@@ -230,7 +233,6 @@
             cursor: pointer;
             color: #94a3b8;
             font-size: 1rem;
-            transition: color 0.2s;
             z-index: 2;
         }
 
@@ -381,7 +383,7 @@
             text-decoration: underline;
         }
 
-        /* Error Message styling */
+        /* Error Message styling - Django form errors */
         .error-message {
             background: #fee2e2;
             color: #dc2626;
@@ -397,6 +399,15 @@
 
         .error-message i {
             font-size: 1rem;
+        }
+
+        .nonfield-errors {
+            background: #fee2e2;
+            color: #dc2626;
+            padding: 12px 16px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            margin-bottom: 24px;
         }
 
         /* Footer */
@@ -493,7 +504,7 @@
             </a>
         </div>
         <div class="header-icons">
-            <a href="#" class="icon-item"><i class="far fa-user"></i><span>Account</span></a>
+            <a href="{% url 'login' %}" class="icon-item"><i class="far fa-user"></i><span>Account</span></a>
             <a href="#" class="icon-item"><i class="far fa-heart"></i><span>Wishlist</span></a>
             <a href="#" class="icon-item"><i class="fas fa-shopping-cart"></i><span>Cart</span></a>
         </div>
@@ -510,14 +521,16 @@
         </div>
 
         <div class="login-form">
-            <!-- Display Django form errors if any -->
-            {% if form.errors %}
-            <div class="error-message">
-                <i class="fas fa-exclamation-circle"></i>
-                <span>Invalid username or password. Please try again.</span>
+            <!-- Display Django form non-field errors -->
+            {% if form.non_field_errors %}
+            <div class="nonfield-errors">
+                {% for error in form.non_field_errors %}
+                    <i class="fas fa-exclamation-circle"></i> {{ error }}
+                {% endfor %}
             </div>
             {% endif %}
-            
+
+            <!-- Display next parameter message if any -->
             {% if next %}
                 {% if user.is_authenticated %}
                 <div class="error-message">
@@ -532,64 +545,80 @@
                 {% endif %}
             {% endif %}
 
-            <form method="post" id="loginForm">
+            <form method="post" action="{% url 'login' %}">
                 {% csrf_token %}
                 
                 <!-- Username Field -->
                 <div class="input-group">
-                    <label for="username">Username or Email</label>
+                    <label for="id_username">Username or Email</label>
                     <div class="input-icon">
                         <i class="fas fa-envelope"></i>
-                        <input type="text" id="username" name="username" placeholder="Enter your username" required autofocus>
+                        <input type="text" name="username" id="id_username" placeholder="Enter your username" 
+                               value="{{ form.username.value|default:'' }}" required autofocus>
                     </div>
+                    {% if form.username.errors %}
+                        <div class="field-error" style="color:#dc2626; font-size:0.7rem; margin-top:5px;">
+                            {% for error in form.username.errors %}{{ error }}{% endfor %}
+                        </div>
+                    {% endif %}
                 </div>
 
-                <!-- Password Field with Toggle -->
+                <!-- Password Field -->
                 <div class="input-group">
-                    <label for="password">Password</label>
-                    <div class="input-icon">
+                    <label for="id_password">Password</label>
+                    <div class="input-icon password-wrapper">
                         <i class="fas fa-lock"></i>
-                        <input type="password" id="password" name="password" placeholder="Enter your password" required>
-                        <button type="button" class="password-toggle" id="togglePassword">
-                            <i class="far fa-eye"></i>
+                        <input type="password" name="password" id="id_password" placeholder="Enter your password" required>
+                        <button type="button" class="password-toggle" onclick="togglePasswordVisibility()">
+                            <i class="far fa-eye" id="toggleIcon"></i>
                         </button>
                     </div>
+                    {% if form.password.errors %}
+                        <div class="field-error" style="color:#dc2626; font-size:0.7rem; margin-top:5px;">
+                            {% for error in form.password.errors %}{{ error }}{% endfor %}
+                        </div>
+                    {% endif %}
                 </div>
 
                 <!-- Remember Me & Forgot Password -->
                 <div class="form-options">
                     <label class="checkbox-label">
-                        <input type="checkbox" name="remember" id="remember">
+                        <input type="checkbox" name="remember" id="id_remember">
                         <span>Remember me</span>
                     </label>
-                    <a href="#" class="forgot-link">Forgot Password?</a>
+                    <a href="" class="forgot-link">Forgot Password?</a>
                 </div>
+
+                <!-- Hidden next parameter to redirect after login -->
+                {% if next %}
+                    <input type="hidden" name="next" value="{{ next }}">
+                {% endif %}
 
                 <!-- Login Button -->
                 <button type="submit" class="login-btn">
                     <i class="fas fa-sign-in-alt"></i> Sign In
                 </button>
-<!-- 
-                Divider
+
+                <!-- Divider -->
                 <div class="divider">
                     <span class="divider-line"></span>
                     <span>OR</span>
                     <span class="divider-line"></span>
                 </div>
 
-                <!-- Social Login Options -->
-                <!-- <div class="social-login">
-                    <button type="button" class="social-btn google" id="googleLogin">
+                <!-- Social Login Options - Placeholder for future OAuth -->
+                <div class="social-login">
+                    <button type="button" class="social-btn google" disabled style="opacity:0.7; cursor:not-allowed;">
                         <i class="fab fa-google"></i> Google
                     </button>
-                    <button type="button" class="social-btn facebook" id="facebookLogin">
+                    <button type="button" class="social-btn facebook" disabled style="opacity:0.7; cursor:not-allowed;">
                         <i class="fab fa-facebook-f"></i> Facebook
                     </button>
-                </div> --> -->
+                </div>
 
                 <!-- Register Link -->
                 <div class="register-link">
-                    Don't have an account? <a href="/register/">Create Account</a>
+                    Don't have an account? <a href="{% url 'signup' %}">Create Account</a>
                 </div>
             </form>
         </div>
@@ -627,86 +656,23 @@
     <div class="copyright">© 2025 GlobalMart | Secure Login | Nigeria's Trusted Marketplace</div>
 </div>
 
+<!-- Minimal JavaScript only for password visibility toggle (UX enhancement) -->
 <script>
-    // Password visibility toggle
-    const togglePassword = document.getElementById('togglePassword');
-    const passwordInput = document.getElementById('password');
-
-    if (togglePassword && passwordInput) {
-        togglePassword.addEventListener('click', function() {
-            const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
-            passwordInput.setAttribute('type', type);
-            this.querySelector('i').classList.toggle('fa-eye');
-            this.querySelector('i').classList.toggle('fa-eye-slash');
-        });
-    }
-
-    // Remember me functionality (store username in localStorage)
-    const rememberCheckbox = document.getElementById('remember');
-    const usernameInput = document.getElementById('username');
-
-    // Load saved username if "Remember me" was checked previously
-    if (localStorage.getItem('rememberedUsername') && rememberCheckbox) {
-        usernameInput.value = localStorage.getItem('rememberedUsername');
-        rememberCheckbox.checked = true;
-    }
-
-    // Save username when form is submitted with remember me checked
-    const loginForm = document.getElementById('loginForm');
-    if (loginForm) {
-        loginForm.addEventListener('submit', function(e) {
-            if (rememberCheckbox && rememberCheckbox.checked) {
-                localStorage.setItem('rememberedUsername', usernameInput.value);
-            } else if (rememberCheckbox) {
-                localStorage.removeItem('rememberedUsername');
-            }
-            // Form will submit normally to Django backend
-        });
-    }
-
-    // Social login placeholders (integrate with your backend OAuth later)
-    const googleBtn = document.getElementById('googleLogin');
-    const facebookBtn = document.getElementById('facebookLogin');
-
-    if (googleBtn) {
-        googleBtn.addEventListener('click', function() {
-            alert('Google Sign-In integration coming soon! For now, please use username/password.');
-            // In production, redirect to your OAuth URL:
-            // window.location.href = "/oauth/login/google/";
-        });
-    }
-
-    if (facebookBtn) {
-        facebookBtn.addEventListener('click', function() {
-            alert('Facebook Sign-In integration coming soon! Please use username/password.');
-            // window.location.href = "/oauth/login/facebook/";
-        });
-    }
-
-    // Forgot password handler
-    const forgotLink = document.querySelector('.forgot-link');
-    if (forgotLink) {
-        forgotLink.addEventListener('click', function(e) {
-            e.preventDefault();
-            alert('Password reset link will be sent to your registered email address.');
-            // Redirect to password reset page:
-            // window.location.href = "/password-reset/";
-        });
-    }
-
-    // Add some subtle animation on page load
-    document.addEventListener('DOMContentLoaded', function() {
-        const card = document.querySelector('.login-card');
-        if (card) {
-            card.style.opacity = '0';
-            card.style.transform = 'translateY(20px)';
-            setTimeout(() => {
-                card.style.transition = 'all 0.4s ease';
-                card.style.opacity = '1';
-                card.style.transform = 'translateY(0)';
-            }, 50);
+    // Only password toggle functionality - all authentication is handled by Django
+    function togglePasswordVisibility() {
+        const passwordInput = document.getElementById('id_password');
+        const toggleIcon = document.getElementById('toggleIcon');
+        
+        if (passwordInput.type === 'password') {
+            passwordInput.type = 'text';
+            toggleIcon.classList.remove('fa-eye');
+            toggleIcon.classList.add('fa-eye-slash');
+        } else {
+            passwordInput.type = 'password';
+            toggleIcon.classList.remove('fa-eye-slash');
+            toggleIcon.classList.add('fa-eye');
         }
-    });
+    }
 </script>
 
 </body>
