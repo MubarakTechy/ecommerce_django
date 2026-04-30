@@ -8,6 +8,10 @@ from django.contrib.auth.decorators import login_required
 from .models import Order, Product, Cart, Wishlist
 from django.shortcuts import get_object_or_404, redirect, render
 from django.contrib.auth import update_session_auth_hash
+from django.http import JsonResponse
+import requests
+from django.conf import settings
+import uuid
 
 # Home
 def Home(request):
@@ -75,27 +79,37 @@ def dashboard_view(request):
     })
 
 # Single Product View
-def single_product_view(request, product_id):
-    product = Product.objects.get(id=product_id)
-    return render(request, 'Singleproduct.html', {
-        'product': product
-    })
+def product_detail(request, product_id):
+    product = get_object_or_404(Product, id=product_id)
+    related_products = Product.objects.filter(category=product.category).exclude(id=product_id)[:4]
 
+    return render(request, 'product_detail.html', {
+        'product': product,
+        'related_products': related_products
+    })
 
 @login_required
 def order_view(request, product_id):
-    product = Product.objects.get(id=product_id)
+    product = get_object_or_404(Product, id=product_id)
+
+    quantity = 1
+    price = product.price
+    total_price = price * quantity
+
+
+
+    reference = str(uuid.uuid4())
 
     Order.objects.create(
         user=request.user,
         product=product,
         quantity=1,
         price=product.price,
-        status="pending"   # lowercase
+        total_price=product.price,
+        payment_reference=reference,
+        payment_status="pending"
     )
-
     return redirect("dashboard")
-
 
 @login_required
 def add_to_cart(request, product_id):
@@ -177,3 +191,123 @@ def update_profile(request):
         return JsonResponse({"success": True})
 
     return JsonResponse({"error": "Invalid request"}, status=400)
+
+
+
+
+
+
+@login_required
+def initiate_payment(request, order_id):
+    order = Order.objects.get(id=order_id)
+
+    url = "https://api.paystack.co/transaction/initialize"
+
+    headers = {
+        "Authorization": f"Bearer {settings.PAYSTACK_SECRET_KEY}",
+        "Content-Type": "application/json",
+    }
+
+    data = {
+        "email": request.user.email,
+        "amount": int(order.price * 100),  # Paystack uses kobo
+        "callback_url": "http://127.0.0.1:8000/payment/verify/",
+    }
+
+    response = requests.post(url, json=data, headers=headers)
+    res_data = response.json()
+
+    if res_data["status"]:
+        order.payment_reference = res_data["data"]["reference"]
+        order.save()
+        return redirect(res_data["data"]["authorization_url"])
+
+    return redirect("dashboard")
+
+
+
+@login_required
+def verify_payment(request):
+    reference = request.GET.get("reference")
+
+    url = f"https://api.paystack.co/transaction/verify/{reference}"
+
+    headers = {
+        "Authorization": f"Bearer {settings.PAYSTACK_SECRET_KEY}",
+    }
+
+    response = requests.get(url, headers=headers)
+    res_data = response.json()
+
+    if res_data["status"]:
+        order = Order.objects.get(payment_reference=reference)
+
+        order.payment_status = "paid"
+        order.status = "processing"
+        order.save()
+
+    return redirect("dashboard")
+
+@login_required
+def create_order(request, product_id):
+    product = get_object_or_404(Product, id=product_id)
+
+    order = Order.objects.create(
+        user=request.user,
+        product=product,
+        quantity=1,
+        status="pending"
+    )
+
+    return redirect("pay_order", order_id=order.id)
+
+
+import requests
+from django.conf import settings
+from django.shortcuts import render, get_object_or_404
+
+@login_required
+def pay_order(request, order_id):
+    order = get_object_or_404(Order, id=order_id)
+
+    url = "https://api.paystack.co/transaction/initialize"
+
+    data = {
+        "email": request.user.email,
+        "amount": int(order.product.price * 100),  # kobo
+        "reference": f"order_{order.id}_{order.user.id}",
+        "callback_url": "http://127.0.0.1:8000/payment/verify/"
+    }
+
+    headers = {
+        "Authorization": f"Bearer {settings.PAYSTACK_SECRET_KEY}",
+        "Content-Type": "application/json"
+    }
+
+    response = requests.post(url, json=data, headers=headers)
+    res = response.json()
+
+    return redirect(res['data']['authorization_url'])
+
+
+
+@login_required
+def verify_payment(request):
+    reference = request.GET.get("reference")
+
+    url = f"https://api.paystack.co/transaction/verify/{reference}"
+    headers = {
+        "Authorization": f"Bearer {settings.PAYSTACK_SECRET_KEY}"
+    }
+
+    response = requests.get(url, headers=headers)
+    data = response.json()
+
+    if data['data']['status'] == "success":
+        order = Order.objects.get(payment_reference=reference)
+
+        order.is_paid = True
+        order.status = "paid"
+        order.save()
+
+    return redirect("dashboard")

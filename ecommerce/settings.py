@@ -40,7 +40,8 @@ import cloudinary.api
 #     api_secret="vvpAE4E1cx6iKF96rsw",
 #     secure=True
 # )
-
+PAYSTACK_SECRET_KEY = "sk_test_6f53a197c5935542de0098ab52c91c0b614f8e7b"
+PAYSTACK_PUBLIC_KEY = "pk_test_9f231ed206e799cba0a4064c2f00b044e4a62da4"
 
 cloudinary.config(
     cloud_name = "defws12bm",

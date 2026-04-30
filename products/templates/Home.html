@@ -398,6 +398,12 @@
             -webkit-box-orient: vertical;
             overflow: hidden;
             min-height: 52px;
+            text-decoration: none;
+            color: #0f172a;
+            transition: color 0.2s;
+        }
+        .product-title:hover {
+            color: #ff6b35;
         }
         .rating {
             display: flex;
@@ -466,6 +472,7 @@
             align-items: center;
             justify-content: center;
             gap: 8px;
+            text-decoration: none;
         }
         .order-btn:hover { background: #ff6b35; transform: translateY(-2px); }
         .wishlist-btn {
@@ -475,6 +482,10 @@
             border-radius: 40px;
             cursor: pointer;
             transition: 0.2s;
+            display: inline-flex;
+            align-items: center;
+            text-decoration: none;
+            color: #0f172a;
         }
         .cart-btn {
             background: #f1f5f9;
@@ -483,6 +494,10 @@
             border-radius: 40px;
             cursor: pointer;
             transition: 0.2s;
+            display: inline-flex;
+            align-items: center;
+            text-decoration: none;
+            color: #0f172a;
         }
         .cart-btn:hover, .wishlist-btn:hover { background: #ff6b35; color: white; border-color: #ff6b35; }
 
@@ -531,11 +546,45 @@
         .footer-col p:hover { color: #ff6b35; }
         .copyright { text-align: center; padding-top: 40px; font-size: 0.7rem; border-top: 1px solid #1e293b; margin-top: 30px; }
 
+        /* Sort dropdown styles */
+        .sort-container {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 24px;
+            justify-content: flex-end;
+        }
+        .sort-label {
+            font-size: 0.85rem;
+            font-weight: 500;
+            color: #475569;
+        }
+        .sort-select {
+            padding: 8px 16px;
+            border: 1px solid #e2e8f0;
+            border-radius: 40px;
+            background: white;
+            font-size: 0.85rem;
+            font-weight: 500;
+            color: #1e293b;
+            cursor: pointer;
+            outline: none;
+            transition: all 0.2s;
+        }
+        .sort-select:hover {
+            border-color: #ff6b35;
+        }
+        .sort-select:focus {
+            border-color: #ff6b35;
+            box-shadow: 0 0 0 2px rgba(255,107,53,0.1);
+        }
+
         @media (max-width: 900px) {
             .header-icons { display: none; }
             .mobile-menu-toggle { display: block; }
             .products-grid { gap: 20px; }
             .hero-text h2 { font-size: 1.8rem; }
+            .sort-container { margin-top: 10px; }
         }
         @media (max-width: 640px) {
             .container, .header-container, .top-container { padding: 0 18px; }
@@ -544,6 +593,8 @@
             .search-bar { max-width: 200px; }
             .search-bar input { padding: 8px 12px; }
             .search-bar button { padding: 0 16px; }
+            .section-title { flex-direction: column; gap: 15px; }
+            .sort-container { width: 100%; justify-content: flex-start; }
         }
     </style>
 </head>
@@ -623,7 +674,7 @@
         <div class="hero-text">
             <div class="hero-badge"><i class="fas fa-fire"></i> UP TO 70% OFF</div>
             <h2>Big Ramadan Sales</h2>
-            <p style="margin-top: 8px;">Free delivery on orders over ₦40,000 + extra 10% cashback</p>
+            <p style="margin-top: 8px;">Free delivery on orders over $40,000 + extra 10% cashback</p>
             <button class="hero-btn" id="flashBtn">Grab Deals <i class="fas fa-arrow-right"></i></button>
         </div>
         <div><i class="fas fa-tags" style="font-size: 85px; color:#ff6b35; opacity: 0.3;"></i></div>
@@ -631,12 +682,21 @@
 
     <div class="section-title">
         <h2>🔥 Just For You</h2>
-        <a href="#" class="view-all" id="viewAllLink">View all <i class="fas fa-arrow-right"></i></a>
+        <div class="sort-container">
+            <span class="sort-label"><i class="fas fa-sort-amount-down-alt"></i> Sort by:</span>
+            <select id="sortSelect" class="sort-select">
+                <option value="price_asc" selected>Price: Low to High</option>
+                <option value="price_desc">Price: High to Low</option>
+                <option value="name_asc">Name: A to Z</option>
+                <option value="name_desc">Name: Z to A</option>
+            </select>
+            <a href="#" class="view-all" id="viewAllLink">View all <i class="fas fa-arrow-right"></i></a>
+        </div>
     </div>
 
-    <d class="products-grid">
-        {% for product in products %}
-        <div class="product-card" data-product-id="{{ product.id }}">
+    <div class="products-grid" id="productGrid">
+        {% for product in products|dictsort:"price" %}
+        <div class="product-card" data-product-id="{{ product.id }}" data-product-price="{{ product.price }}" data-product-name="{{ product.name }}">
             <div class="product-image">
                 {% if product.old_price %}<span class="discount-badge">HOT DEAL</span>{% endif %}
                 {% if product.image %}
@@ -646,11 +706,11 @@
                 {% endif %}
             </div>
             <div class="product-details">
-                <div class="product-title">{{ product.name }}</div>
+                <a href="{% url 'product_detail' product.id %}" class="product-title">{{ product.name }}</a>
                 <div class="product-description">{{ product.description|truncatechars:65 }}</div>
                 <div class="price">
-                    <span class="current-price">₦{{ product.price|floatformat:0 }}</span>
-                    {% if product.old_price %}<span class="old-price">₦{{ product.old_price|floatformat:0 }}</span>{% endif %}
+                    <span class="current-price">${{ product.price|floatformat:0 }}</span>
+                    {% if product.old_price %}<span class="old-price">${{ product.old_price|floatformat:0 }}</span>{% endif %}
                 </div>
                 <div class="shipping-badge"><i class="fas fa-truck-fast"></i> Free Shipping</div>
                 <div class="product-actions">
@@ -663,7 +723,7 @@
         {% empty %}
         <div class="empty-state"><i class="fas fa-store-slash"></i><p>No products yet — check back soon.</p></div>
         {% endfor %}
-    </d>
+    </div>
 </div>
 
 <!-- Footer -->
@@ -674,7 +734,7 @@
         <div class="footer-col"><h4>Payment</h4><p>Visa / Mastercard</p><p>Paystack & Flutterwave</p><p>Bank Transfer</p></div>
         <div class="footer-col"><h4>Connect</h4><p>Instagram</p><p>Twitter</p><p>TikTok Shop</p></div>
     </div>
-    <div class="copyright">© 2025 GlobalMart — Nigeria’s premium marketplace. All rights reserved.</div>
+    <div class="copyright">© 2025 GlobalMart — Nigeria's premium marketplace. All rights reserved.</div>
 </div>
 
 <script>
@@ -692,7 +752,6 @@
     // Django context auth handling
     const isAuthenticated = {{ user.is_authenticated|lower }};
     const loginUrl = "{% url 'login' %}";
-    const baseOrderUrl = "{% url 'order_product' 0 %}".replace('0', '');
 
     function showToast(message, isError = false) {
         let oldToast = document.querySelector('.toast-notification');
@@ -726,6 +785,7 @@
     document.querySelectorAll('.wishlist-btn').forEach(btn => {
         btn.addEventListener('click', function(e) {
             e.preventDefault();
+            e.stopPropagation();
             if (!isAuthenticated) {
                 showToast('Login to add to wishlist', true);
                 setTimeout(() => window.location.href = `${loginUrl}?next=/`, 1000);
@@ -740,6 +800,7 @@
     document.querySelectorAll('.cart-btn').forEach(btn => {
         btn.addEventListener('click', function(e) {
             e.preventDefault();
+            e.stopPropagation();
             if (!isAuthenticated) {
                 showToast('Sign in to add items to cart', true);
                 setTimeout(() => window.location.href = `${loginUrl}?next=/`, 1000);
@@ -750,6 +811,45 @@
             }
         });
     });
+
+    // Sorting functionality
+    function sortProducts(sortType) {
+        const grid = document.getElementById('productGrid');
+        const cards = Array.from(document.querySelectorAll('.product-card'));
+        
+        cards.sort((a, b) => {
+            if (sortType === 'price_asc') {
+                const priceA = parseFloat(a.getAttribute('data-product-price') || 0);
+                const priceB = parseFloat(b.getAttribute('data-product-price') || 0);
+                return priceA - priceB;
+            } else if (sortType === 'price_desc') {
+                const priceA = parseFloat(a.getAttribute('data-product-price') || 0);
+                const priceB = parseFloat(b.getAttribute('data-product-price') || 0);
+                return priceB - priceA;
+            } else if (sortType === 'name_asc') {
+                const nameA = a.getAttribute('data-product-name') || '';
+                const nameB = b.getAttribute('data-product-name') || '';
+                return nameA.localeCompare(nameB);
+            } else if (sortType === 'name_desc') {
+                const nameA = a.getAttribute('data-product-name') || '';
+                const nameB = b.getAttribute('data-product-name') || '';
+                return nameB.localeCompare(nameA);
+            }
+            return 0;
+        });
+        
+        // Clear and re-append sorted cards
+        cards.forEach(card => grid.appendChild(card));
+    }
+
+    // Sort select event listener
+    const sortSelect = document.getElementById('sortSelect');
+    if (sortSelect) {
+        sortSelect.addEventListener('change', (e) => {
+            sortProducts(e.target.value);
+            showToast(`Sorted by: ${e.target.options[e.target.selectedIndex].text}`);
+        });
+    }
 
     // search & filter
     const searchInput = document.getElementById('searchInput');
@@ -788,30 +888,31 @@
             document.querySelectorAll('.product-card').forEach(c => c.style.display = '');
             const noRes = document.getElementById('noResults');
             if (noRes) noRes.remove();
+            // Reset to price low to high when viewing all
+            if (sortSelect) sortSelect.value = 'price_asc';
+            sortProducts('price_asc');
+            showToast('Showing all products - Sorted by price: Low to High');
         });
     }
 
     const flashBtn = document.getElementById('flashBtn');
     if (flashBtn) {
         flashBtn.addEventListener('click', () => {
-            const container = document.getElementById('productGrid');
-            const cards = Array.from(document.querySelectorAll('.product-card'));
-            cards.sort((a,b) => {
-                const priceA = parseInt(a.querySelector('.current-price')?.innerText.replace(/[^0-9]/g,'') || '0');
-                const priceB = parseInt(b.querySelector('.current-price')?.innerText.replace(/[^0-9]/g,'') || '0');
-                return priceA - priceB;
-            });
-            cards.forEach(card => container.appendChild(card));
+            // Sort by price low to high when clicking flash deals
+            if (sortSelect) sortSelect.value = 'price_asc';
+            sortProducts('price_asc');
             document.querySelector('.section-title').scrollIntoView({ behavior: 'smooth' });
-            showToast('🔥 Showing trending low prices!');
+            showToast('🔥 Showing best deals - Lowest prices first!');
         });
     }
 
+    // Product card click to go to detail page
     document.querySelectorAll('.product-card').forEach(card => {
         card.addEventListener('click', (e) => {
+            // Don't trigger if clicking on action buttons or their children
             if(e.target.closest('.order-btn') || e.target.closest('.wishlist-btn') || e.target.closest('.cart-btn')) return;
-            const orderLink = card.querySelector('.order-btn');
-            if(orderLink && orderLink.href) window.location.href = orderLink.href;
+            const productLink = card.querySelector('.product-title');
+            if(productLink && productLink.href) window.location.href = productLink.href;
         });
     });
 </script>

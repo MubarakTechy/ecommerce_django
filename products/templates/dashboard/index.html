@@ -364,11 +364,47 @@
       font-size: 0.75rem;
       font-weight: 700;
       text-transform: uppercase;
+      display: inline-block;
     }
 
     .status-pending { background: #fef9c3; color: #b45309; }
     .status-delivered { background: #dcfce7; color: #166534; }
     .status-cancelled { background: #fee2e2; color: #b91c1c; }
+    .status-processing { background: #ffedd5; color: #c2410c; }
+    .status-shipped { background: #dbeafe; color: #1e40af; }
+
+    .pay-btn {
+      background: linear-gradient(135deg, #f97316, #ea580c);
+      color: white;
+      padding: 8px 20px;
+      border-radius: 30px;
+      text-decoration: none;
+      font-size: 0.8rem;
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.2s;
+      border: none;
+      cursor: pointer;
+    }
+
+    .pay-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(249,115,22,0.3);
+    }
+
+    .paid-badge {
+      background: #dcfce7;
+      color: #166534;
+      padding: 6px 16px;
+      border-radius: 30px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
 
     .cart-item, .wishlist-item {
       display: flex;
@@ -389,6 +425,14 @@
       transition: 0.2s;
       text-decoration: none;
       font-size: 0.8rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .remove-cart-btn:hover, .remove-wishlist-btn:hover {
+      background: #fee2e2;
+      transform: scale(0.97);
     }
 
     .cart-total {
@@ -400,8 +444,27 @@
       font-size: 1.2rem;
     }
 
+    .empty-msg {
+      text-align: center;
+      padding: 60px 20px;
+      color: #64748b;
+    }
+
+    .empty-msg i {
+      font-size: 3rem;
+      margin-bottom: 12px;
+      opacity: 0.5;
+    }
+
     .form-group {
       margin-bottom: 22px;
+    }
+
+    .form-group label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 500;
+      color: #334155;
     }
 
     .form-group input {
@@ -434,6 +497,7 @@
 
     .save-btn:hover {
       background: #ea580c;
+      transform: translateY(-2px);
     }
 
     .footer {
@@ -443,6 +507,7 @@
       margin-top: 40px;
     }
 
+    /* Responsive */
     @media (max-width: 968px) {
       .dashboard-grid {
         grid-template-columns: 1fr;
@@ -469,6 +534,16 @@
       }
       .sidebar-overlay.active {
         display: block;
+      }
+      .orders-table {
+        font-size: 0.85rem;
+      }
+      .orders-table th, .orders-table td {
+        padding: 10px;
+      }
+      .pay-btn, .paid-badge {
+        padding: 4px 12px;
+        font-size: 0.7rem;
       }
     }
   </style>
@@ -521,21 +596,41 @@
           {% if orders %}
           <div style="overflow-x: auto;">
             <table class="orders-table">
-              <thead><tr><th>Product</th><th>Price</th><th>Date</th><th>Status</th></tr></thead>
+              <thead>
+                <tr>
+                  <th>Product</th>
+                  <th>Price</th>
+                  <th>Date</th>
+                  <th>Status</th>
+                  <th>Payment</th>
+                </tr>
+              </thead>
               <tbody>
                 {% for order in orders %}
                 <tr>
                   <td><strong>{{ order.product.name }}</strong></td>
-                  <td>${{ order.price|floatformat:0 }}</td>
-                  <td>{{ order.date|date:"Y-m-d"|default:order.created_at|date:"Y-m-d" }}</td>
+                  <td>₦{{ order.price|floatformat:0 }}</td>
+                  <td>{{ order.created_at|date:"Y-m-d" }}</td>
                   <td><span class="status-badge status-{{ order.status|lower }}">{{ order.status }}</span></td>
+                  <!-- ✅ CORRECTED PAYMENT STATUS USING IS_PAID -->
+                  <td>
+                    {% if order.is_paid %}
+                      <span class="paid-badge">
+                        <i class="fas fa-check-circle"></i> Paid
+                      </span>
+                    {% else %}
+                      <a href="{% url 'pay' order.id %}" class="pay-btn">
+                        <i class="fas fa-credit-card"></i> Pay Now
+                      </a>
+                    {% endif %}
+                  </td>
                 </tr>
                 {% endfor %}
               </tbody>
             </table>
           </div>
           {% else %}
-          <div class="empty-msg"><i class="fas fa-box-open"></i><p>No orders yet.</p></div>
+          <div class="empty-msg"><i class="fas fa-box-open"></i><p>No orders yet. Start shopping!</p></div>
           {% endif %}
         </div>
 
@@ -545,15 +640,20 @@
           {% if cart_items %}
           <div id="cart-list-container">
             {% for item in cart_items %}
-            <div class="cart-item">
-              <div><strong>{{ item.product.name }}</strong><br><span>${{ item.product.price|floatformat:0 }} × {{ item.quantity }}</span></div>
+            <div class="cart-item" data-cart-id="{{ item.id }}">
+              <div>
+                <strong>{{ item.product.name }}</strong><br>
+                <span>₦{{ item.product.price|floatformat:0 }} × {{ item.quantity }}</span>
+              </div>
               <a href="{% url 'remove_from_cart' item.id %}" class="remove-cart-btn"><i class="fas fa-trash"></i> Remove</a>
             </div>
             {% endfor %}
           </div>
-          <div class="cart-total">Total: ${{ cart_total|floatformat:0 }}</div>
+          <div class="cart-total">
+            <i class="fas fa-calculator"></i> Total: ₦{{ cart_total|floatformat:0 }}
+          </div>
           {% else %}
-          <div class="empty-msg"><i class="fas fa-cart-shopping"></i><p>Cart is empty.</p></div>
+          <div class="empty-msg"><i class="fas fa-cart-shopping"></i><p>Your cart is empty.</p></div>
           {% endif %}
         </div>
 
@@ -563,14 +663,16 @@
           {% if wishlist_items %}
           <div id="wishlist-container">
             {% for item in wishlist_items %}
-            <div class="wishlist-item">
-              <div><strong>{{ item.product.name }}</strong> — ₦{{ item.product.price|floatformat:0 }}</div>
-              <a href="{% url 'remove_from_wishlist' item.id %}" class="remove-wishlist-btn">Remove</a>
+            <div class="wishlist-item" data-wishlist-id="{{ item.id }}">
+              <div>
+                <strong>{{ item.product.name }}</strong> — ₦{{ item.product.price|floatformat:0 }}
+              </div>
+              <a href="{% url 'remove_from_wishlist' item.id %}" class="remove-wishlist-btn"><i class="fas fa-trash"></i> Remove</a>
             </div>
             {% endfor %}
           </div>
           {% else %}
-          <div class="empty-msg"><i class="far fa-heart"></i><p>Wishlist empty.</p></div>
+          <div class="empty-msg"><i class="far fa-heart"></i><p>Your wishlist is empty.</p></div>
           {% endif %}
         </div>
 
@@ -579,9 +681,18 @@
           <h3><i class="fas fa-user-cog"></i> Profile Settings</h3>
           <form method="post" action="{% url 'update_profile' %}" id="profileForm">
             {% csrf_token %}
-            <div class="form-group"><label>Username</label><input type="text" name="username" value="{{ user.username }}"></div>
-            <div class="form-group"><label>New Password</label><input type="password" name="new_password"></div>
-            <div class="form-group"><label>Confirm Password</label><input type="password" name="confirm_password"></div>
+            <div class="form-group">
+              <label><i class="fas fa-user"></i> Username</label>
+              <input type="text" name="username" value="{{ user.username }}" required>
+            </div>
+            <div class="form-group">
+              <label><i class="fas fa-lock"></i> New Password (leave blank to keep current)</label>
+              <input type="password" name="new_password">
+            </div>
+            <div class="form-group">
+              <label><i class="fas fa-check-circle"></i> Confirm Password</label>
+              <input type="password" name="confirm_password">
+            </div>
             <button type="submit" class="save-btn"><i class="fas fa-save"></i> Save Changes</button>
           </form>
         </div>
@@ -604,7 +715,8 @@
 
       function activatePanel(panelId) {
         panels.forEach(p => p.classList.remove('active-panel'));
-        document.getElementById(`panel-${panelId}`)?.classList.add('active-panel');
+        const targetPanel = document.getElementById(`panel-${panelId}`);
+        if (targetPanel) targetPanel.classList.add('active-panel');
         navItems.forEach(n => {
           n.classList.remove('active');
           if (n.dataset.panel === panelId) n.classList.add('active');
@@ -615,24 +727,48 @@
       navItems.forEach(item => {
         item.addEventListener('click', (e) => {
           e.preventDefault();
-          activatePanel(item.dataset.panel);
+          const panelId = item.dataset.panel;
+          if (panelId) activatePanel(panelId);
         });
       });
 
-      function openSidebar() { sidebar.classList.add('open'); overlay.classList.add('active'); }
-      function closeSidebar() { sidebar.classList.remove('open'); overlay.classList.remove('active'); }
+      function openSidebar() { 
+        sidebar.classList.add('open'); 
+        overlay.classList.add('active'); 
+      }
+      function closeSidebar() { 
+        sidebar.classList.remove('open'); 
+        overlay.classList.remove('active'); 
+      }
 
-      menuToggle?.addEventListener('click', openSidebar);
-      sidebarClose?.addEventListener('click', closeSidebar);
-      overlay?.addEventListener('click', closeSidebar);
+      if (menuToggle) menuToggle.addEventListener('click', openSidebar);
+      if (sidebarClose) sidebarClose.addEventListener('click', closeSidebar);
+      if (overlay) overlay.addEventListener('click', closeSidebar);
 
       // AJAX remove handlers (cart / wishlist)
       document.querySelectorAll('.remove-cart-btn').forEach(btn => {
         btn.addEventListener('click', async function(e) {
           e.preventDefault();
           const url = this.href;
-          const res = await fetch(url, { method: 'GET' });
-          if (res.ok) this.closest('.cart-item')?.remove();
+          try {
+            const res = await fetch(url, { method: 'GET' });
+            if (res.ok) {
+              const cartItem = this.closest('.cart-item');
+              if (cartItem) cartItem.remove();
+              // Update total or show empty message if needed
+              const remainingItems = document.querySelectorAll('.cart-item').length;
+              if (remainingItems === 0) {
+                const cartContainer = document.getElementById('cart-list-container');
+                if (cartContainer) {
+                  cartContainer.innerHTML = '<div class="empty-msg"><i class="fas fa-cart-shopping"></i><p>Your cart is empty.</p></div>';
+                  const totalDiv = document.querySelector('.cart-total');
+                  if (totalDiv) totalDiv.style.display = 'none';
+                }
+              }
+            }
+          } catch(err) {
+            console.error('Error removing from cart:', err);
+          }
         });
       });
 
@@ -640,33 +776,64 @@
         btn.addEventListener('click', async function(e) {
           e.preventDefault();
           const url = this.href;
-          const res = await fetch(url, { method: 'GET' });
-          if (res.ok) this.closest('.wishlist-item')?.remove();
+          try {
+            const res = await fetch(url, { method: 'GET' });
+            if (res.ok) {
+              const wishlistItem = this.closest('.wishlist-item');
+              if (wishlistItem) wishlistItem.remove();
+              const remainingItems = document.querySelectorAll('.wishlist-item').length;
+              if (remainingItems === 0) {
+                const wishlistContainer = document.getElementById('wishlist-container');
+                if (wishlistContainer) {
+                  wishlistContainer.innerHTML = '<div class="empty-msg"><i class="far fa-heart"></i><p>Your wishlist is empty.</p></div>';
+                }
+              }
+            }
+          } catch(err) {
+            console.error('Error removing from wishlist:', err);
+          }
         });
       });
 
+      // Profile form submission with AJAX
       const profileForm = document.getElementById('profileForm');
       if (profileForm) {
         profileForm.addEventListener('submit', async function(e) {
           e.preventDefault();
           const formData = new FormData(this);
-          const res = await fetch(this.action, {
-            method: 'POST',
-            body: formData,
-            headers: { 'X-CSRFToken': getCookie('csrftoken') }
-          });
-          const data = await res.json();
-          alert(data.success ? 'Profile updated!' : (data.error || 'Error'));
+          try {
+            const res = await fetch(this.action, {
+              method: 'POST',
+              body: formData,
+              headers: { 'X-CSRFToken': getCookie('csrftoken') }
+            });
+            const data = await res.json();
+            if (data.success) {
+              alert('✅ Profile updated successfully!');
+              if (data.new_username) {
+                const userNameSpan = document.querySelector('.user-info h4');
+                if (userNameSpan) userNameSpan.textContent = data.new_username;
+              }
+            } else {
+              alert(data.error || '❌ Error updating profile');
+            }
+          } catch(err) {
+            alert('Network error. Please try again.');
+          }
         });
       }
 
       function getCookie(name) {
         let value = null;
-        if (document.cookie) {
-          document.cookie.split(';').forEach(c => {
-            const trimmed = c.trim();
-            if (trimmed.startsWith(name + '=')) value = decodeURIComponent(trimmed.substring(name.length+1));
-          });
+        if (document.cookie && document.cookie !== '') {
+          const cookies = document.cookie.split(';');
+          for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+              value = decodeURIComponent(cookie.substring(name.length + 1));
+              break;
+            }
+          }
         }
         return value;
       }

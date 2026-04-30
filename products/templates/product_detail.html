@@ -607,6 +607,27 @@
             font-size: 1rem;
         }
 
+        /* Toast Notification */
+        .toast-notification {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            background: #1a1f2c;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 60px;
+            z-index: 1100;
+            font-size: 0.85rem;
+            font-weight: 500;
+            animation: slideUp 0.3s ease;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+        }
+        
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
         /* Footer */
         .footer {
             background: #1a1f2c;
@@ -776,6 +797,14 @@
                     <span>Login</span>
                 </a>
             {% endif %}
+            <a href="#" class="icon-item">
+                <i class="fas fa-heart"></i>
+                <span>Wishlist</span>
+            </a>
+            <a href="#" class="icon-item">
+                <i class="fas fa-shopping-cart"></i>
+                <span>Cart</span>
+            </a>
         </div>
     </div>
 </div>
@@ -853,16 +882,12 @@
                 </div>
 
                 <div class="price-section">
-                    <span class="current-price"><span class="currency">₦</span>{{ product.price|floatformat:0 }}</span>
+                    <span class="current-price"><span class="currency">$</span>{{ product.price|floatformat:0 }}</span>
                     {% if product.oldPrice %}
-                        <span class="old-price">₦{{ product.oldPrice|floatformat:0 }}</span>
-                        {% with diff=product.oldPrice|add:product.price %}
-                            {% with percent=product.oldPrice|add:product.price|stringformat:"f" %}
-                            {% endwith %}
-                            <span class="discount-badge">
-                                -{% widthratio product.price product.oldPrice 100 %}%
-                            </span>
-                        {% endwith %}
+                        <span class="old-price">${{ product.oldPrice|floatformat:0 }}</span>
+                        <span class="discount-badge">
+                            -{% widthratio product.price product.oldPrice 100 %}%
+                        </span>
                     {% endif %}
                 </div>
 
@@ -877,7 +902,7 @@
                     </div>
                     <div class="meta-item">
                         <i class="fas fa-truck"></i>
-                        <span>Free Shipping on orders over ₦40,000</span>
+                        <span>Free Shipping on orders over $40,000</span>
                     </div>
                     <div class="meta-item">
                         <i class="fas fa-shield-alt"></i>
@@ -897,12 +922,12 @@
 
                 <!-- Action Buttons -->
                 <div class="action-buttons">
-                    <button class="btn-cart" id="addToCartBtn">
+                    <a href="{% url 'add_to_cart' product.id %}" class="btn-cart" id="addToCartBtn">
                         <i class="fas fa-shopping-cart"></i> Add to Cart
-                    </button>
-                    <button class="btn-buy" id="buyNowBtn">
+                    </a>
+                    <a href="{% url 'order_product' product.id %}" class="btn-buy" id="buyNowBtn">
                         <i class="fas fa-bolt"></i> Buy Now
-                    </button>
+                    </a>
                     <button class="btn-wishlist" id="wishlistBtn">
                         <i class="far fa-heart"></i>
                     </button>
@@ -927,7 +952,7 @@
         </div>
     </div>
 
-    <!-- Related Products Section (Optional, from backend) -->
+    <!-- Related Products Section -->
     {% if related_products %}
     <div class="related-section">
         <h3 class="related-title">You May Also Like</h3>
@@ -943,7 +968,7 @@
                 </div>
                 <div class="related-info">
                     <div class="related-name">{{ related.name|truncatechars:40 }}</div>
-                    <div class="related-price">₦{{ related.price|floatformat:0 }}</div>
+                    <div class="related-price">${{ related.price|floatformat:0 }}</div>
                 </div>
             </a>
             {% endfor %}
@@ -990,33 +1015,59 @@
 </div>
 
 <script>
+    // Get authenticated status from Django
+    const isAuthenticated = {{ user.is_authenticated|lower }};
+    const loginUrl = "{% url 'login' %}";
+    const productId = {{ product.id }};
+    
+    function showToast(message, isError = false) {
+        let oldToast = document.querySelector('.toast-notification');
+        if (oldToast) oldToast.remove();
+        const toast = document.createElement('div');
+        toast.className = 'toast-notification';
+        toast.style.background = isError ? '#dc2626' : '#1a1f2c';
+        toast.innerHTML = `<i class="fas ${isError ? 'fa-exclamation-triangle' : 'fa-circle-check'}"></i> ${message}`;
+        document.body.appendChild(toast);
+        setTimeout(() => toast.remove(), 3000);
+    }
+
     // Quantity Selector
     const decrementBtn = document.getElementById('decrementQty');
     const incrementBtn = document.getElementById('incrementQty');
     const quantityInput = document.getElementById('quantityInput');
-    const maxStock = {{ product.stock  }};
+    const maxStock = {{ product.stock|default:99 }};
 
-    decrementBtn.addEventListener('click', () => {
-        let currentVal = parseInt(quantityInput.value);
-        if (currentVal > 1) {
-            quantityInput.value = currentVal - 1;
-        }
-    });
+    if (decrementBtn) {
+        decrementBtn.addEventListener('click', () => {
+            let currentVal = parseInt(quantityInput.value);
+            if (currentVal > 1) {
+                quantityInput.value = currentVal - 1;
+            }
+        });
+    }
 
-    incrementBtn.addEventListener('click', () => {
-        let currentVal = parseInt(quantityInput.value);
-        if (currentVal < maxStock) {
-            quantityInput.value = currentVal + 1;
-        } else if (maxStock > 0) {
-            quantityInput.value = maxStock;
-        }
-    });
+    if (incrementBtn) {
+        incrementBtn.addEventListener('click', () => {
+            let currentVal = parseInt(quantityInput.value);
+            if (currentVal < maxStock) {
+                quantityInput.value = currentVal + 1;
+            } else if (maxStock > 0) {
+                quantityInput.value = maxStock;
+                showToast(`Only ${maxStock} items available`, true);
+            }
+        });
+    }
 
-    quantityInput.addEventListener('change', () => {
-        let val = parseInt(quantityInput.value);
-        if (isNaN(val) || val < 1) quantityInput.value = 1;
-        if (val > maxStock && maxStock > 0) quantityInput.value = maxStock;
-    });
+    if (quantityInput) {
+        quantityInput.addEventListener('change', () => {
+            let val = parseInt(quantityInput.value);
+            if (isNaN(val) || val < 1) quantityInput.value = 1;
+            if (val > maxStock && maxStock > 0) {
+                quantityInput.value = maxStock;
+                showToast(`Only ${maxStock} items available`, true);
+            }
+        });
+    }
 
     // Thumbnail Gallery
     const thumbnails = document.querySelectorAll('.thumbnail');
@@ -1026,9 +1077,11 @@
     thumbnails.forEach(thumb => {
         thumb.addEventListener('click', () => {
             const newImgSrc = thumb.getAttribute('data-img');
-            mainImage.src = newImgSrc;
-            thumbnails.forEach(t => t.classList.remove('active'));
-            thumb.classList.add('active');
+            if (newImgSrc && mainImage) {
+                mainImage.src = newImgSrc;
+                thumbnails.forEach(t => t.classList.remove('active'));
+                thumb.classList.add('active');
+            }
         });
     });
 
@@ -1037,40 +1090,75 @@
     const lightboxImg = document.getElementById('lightboxImg');
     const lightboxClose = document.querySelector('.lightbox-close');
 
-    mainContainer.addEventListener('click', () => {
-        lightboxImg.src = mainImage.src;
-        lightbox.classList.add('active');
-    });
+    if (mainContainer) {
+        mainContainer.addEventListener('click', () => {
+            if (lightboxImg && mainImage) {
+                lightboxImg.src = mainImage.src;
+                lightbox.classList.add('active');
+            }
+        });
+    }
 
-    lightboxClose.addEventListener('click', () => {
-        lightbox.classList.remove('active');
-    });
-
-    lightbox.addEventListener('click', (e) => {
-        if (e.target === lightbox) {
+    if (lightboxClose) {
+        lightboxClose.addEventListener('click', () => {
             lightbox.classList.remove('active');
-        }
-    });
+        });
+    }
+
+    if (lightbox) {
+        lightbox.addEventListener('click', (e) => {
+            if (e.target === lightbox) {
+                lightbox.classList.remove('active');
+            }
+        });
+    }
 
     // Add to Cart Action
     const addToCartBtn = document.getElementById('addToCartBtn');
+    if (addToCartBtn) {
+        addToCartBtn.addEventListener('click', () => {
+            if (!isAuthenticated) {
+                showToast('Please login to add items to cart', true);
+                setTimeout(() => window.location.href = `${loginUrl}?next=/product/${productId}/`, 1500);
+                return;
+            }
+            const qty = quantityInput.value;
+            showToast(`🛒 Added ${qty} × ${"{{ product.name }}"} to your cart!`);
+            // You can also make an AJAX call here to actually add to cart
+        });
+    }
+
+    // Buy Now Action
     const buyNowBtn = document.getElementById('buyNowBtn');
+    if (buyNowBtn) {
+        buyNowBtn.addEventListener('click', () => {
+            if (!isAuthenticated) {
+                showToast('Please login to proceed with checkout', true);
+                setTimeout(() => window.location.href = `${loginUrl}?next=/product/${productId}/`, 1500);
+                return;
+            }
+            const qty = quantityInput.value;
+            showToast(`🚀 Proceeding to checkout for {{ product.name }}`);
+            // Redirect to checkout with product and quantity
+            setTimeout(() => window.location.href = `/checkout/${productId}/?quantity=${qty}`, 1000);
+        });
+    }
+
+    // Wishlist Action
     const wishlistBtn = document.getElementById('wishlistBtn');
+    if (wishlistBtn) {
+        wishlistBtn.addEventListener('click', () => {
+            if (!isAuthenticated) {
+                showToast('Please login to add to wishlist', true);
+                setTimeout(() => window.location.href = `${loginUrl}?next=/product/${productId}/`, 1500);
+                return;
+            }
+            showToast(`❤️ {{ product.name }} added to your wishlist!`);
+            wishlistBtn.innerHTML = '<i class="fas fa-heart" style="color:#ff6b35;"></i>';
+        });
+    }
 
-    addToCartBtn.addEventListener('click', () => {
-        const qty = quantityInput.value;
-        alert(`🛒 Added ${qty} × {{ product.name }} to your cart!`);
-    });
-
-    buyNowBtn.addEventListener('click', () => {
-        alert(`🚀 Proceeding to checkout for {{ product.name }}`);
-    });
-
-    wishlistBtn.addEventListener('click', () => {
-        alert(`❤️ {{ product.name }} added to your wishlist!`);
-    });
-
-    // Search redirection (simple)
+    // Search redirection
     const searchInput = document.getElementById('searchInput');
     const searchBtn = document.getElementById('searchBtn');
     if (searchBtn) {
@@ -1078,8 +1166,10 @@
             const query = searchInput.value.trim();
             if (query) window.location.href = `/?search=${encodeURIComponent(query)}`;
         });
+    }
+    if (searchInput) {
         searchInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') searchBtn.click();
+            if (e.key === 'Enter' && searchBtn) searchBtn.click();
         });
     }
 </script>
