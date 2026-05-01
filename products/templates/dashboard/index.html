@@ -609,22 +609,22 @@
                 {% for order in orders %}
                 <tr>
                   <td><strong>{{ order.product.name }}</strong></td>
-                  <td>₦{{ order.price|floatformat:0 }}</td>
+                  <td>${{ order.price|floatformat:0 }}</td>
                   <td>{{ order.created_at|date:"Y-m-d" }}</td>
                   <td><span class="status-badge status-{{ order.status|lower }}">{{ order.status }}</span></td>
                   <!-- ✅ CORRECTED PAYMENT STATUS USING IS_PAID -->
                   <td>
-                    {% if order.is_paid %}
-                      <span class="paid-badge">
-                        <i class="fas fa-check-circle"></i> Paid
-                      </span>
-                    {% else %}
-                      <a href="{% url 'pay' order.id %}" class="pay-btn">
-                        <i class="fas fa-credit-card"></i> Pay Now
-                      </a>
-                    {% endif %}
-                  </td>
-                </tr>
+          {% if order.payment_status == "paid" %}
+            <span class="paid-badge">
+              <i class="fas fa-check-circle"></i> Paid
+            </span>
+          {% else %}
+            <a href="{% url 'pay' order.id %}" class="pay-btn">
+              <i class="fas fa-credit-card"></i> Pay Now
+            </a>
+          {% endif %}
+        </td>
+                 </tr>
                 {% endfor %}
               </tbody>
             </table>

@@ -12,6 +12,7 @@ from django.http import JsonResponse
 import requests
 from django.conf import settings
 import uuid
+import json
 
 # Home
 def Home(request):
@@ -95,21 +96,20 @@ def order_view(request, product_id):
     quantity = 1
     price = product.price
     total_price = price * quantity
-
-
-
     reference = str(uuid.uuid4())
 
-    Order.objects.create(
+    order = Order.objects.create(
         user=request.user,
         product=product,
-        quantity=1,
-        price=product.price,
-        total_price=product.price,
+        quantity=quantity,
+        price=price,
+        total_price=total_price,
         payment_reference=reference,
         payment_status="pending"
     )
-    return redirect("dashboard")
+
+    # ✅ go directly to payment
+    return redirect("pay", order_id=order.id)
 
 @login_required
 def add_to_cart(request, product_id):
@@ -131,13 +131,12 @@ def add_to_cart(request, product_id):
 def cart_view(request):
     cart_items = Cart.objects.filter(user=request.user)
 
-    total = sum(item.total_price() for item in cart_items)
+    total = sum(item.product.price * item.quantity for item in cart_items)
 
-    return render(request, "dashboard/", {
+    return render(request, "dashboard/index.html", {
         "cart_items": cart_items,
         "cart_total": total
     })
-
 
 @login_required
 def remove_from_cart(request, cart_id):
@@ -248,46 +247,57 @@ def verify_payment(request):
 
     return redirect("dashboard")
 
-@login_required
-def create_order(request, product_id):
-    product = get_object_or_404(Product, id=product_id)
+# @login_required
+# def create_order(request, product_id):
+#     product = get_object_or_404(Product, id=product_id)
 
-    order = Order.objects.create(
-        user=request.user,
-        product=product,
-        quantity=1,
-        status="pending"
-    )
+#     order = Order.objects.create(
+#         user=request.user,
+#         product=product,
+#         quantity=1,
+#         status="pending"
+#     )
 
-    return redirect("pay_order", order_id=order.id)
+#     return redirect("pay_order", order_id=order.id)
 
 
 import requests
 from django.conf import settings
 from django.shortcuts import render, get_object_or_404
 
+
+
 @login_required
-def pay_order(request, order_id):
-    order = get_object_or_404(Order, id=order_id)
+def initiate_payment(request, order_id):
+    order = get_object_or_404(Order, id=order_id, user=request.user)
+
+    # ✅ Prevent paying twice
+    if order.payment_status == "paid":
+        return redirect("dashboard")
 
     url = "https://api.paystack.co/transaction/initialize"
 
-    data = {
-        "email": request.user.email,
-        "amount": int(order.product.price * 100),  # kobo
-        "reference": f"order_{order.id}_{order.user.id}",
-        "callback_url": "http://127.0.0.1:8000/payment/verify/"
-    }
-
     headers = {
         "Authorization": f"Bearer {settings.PAYSTACK_SECRET_KEY}",
-        "Content-Type": "application/json"
+        "Content-Type": "application/json",
+    }
+
+    data = {
+        "email": request.user.email,
+        "amount": int(order.total_price * 100),
+        "reference": order.payment_reference,
+        "callback_url": "http://127.0.0.1:8000/payment/verify/",
     }
 
     response = requests.post(url, json=data, headers=headers)
-    res = response.json()
+    res_data = response.json()
 
-    return redirect(res['data']['authorization_url'])
+    if res_data.get("status"):
+        return redirect(res_data["data"]["authorization_url"])
+
+    return redirect("dashboard")
+
+
 
 
 
@@ -296,18 +306,41 @@ def verify_payment(request):
     reference = request.GET.get("reference")
 
     url = f"https://api.paystack.co/transaction/verify/{reference}"
+
     headers = {
-        "Authorization": f"Bearer {settings.PAYSTACK_SECRET_KEY}"
+        "Authorization": f"Bearer {settings.PAYSTACK_SECRET_KEY}",
     }
 
     response = requests.get(url, headers=headers)
-    data = response.json()
+    res_data = response.json()
 
-    if data['data']['status'] == "success":
-        order = Order.objects.get(payment_reference=reference)
+    if res_data.get("status") and res_data["data"]["status"] == "success":
+        try:
+            order = Order.objects.get(payment_reference=reference)
 
-        order.is_paid = True
-        order.status = "paid"
-        order.save()
+            order.payment_status = "paid"
+            order.status = "processing"
+            order.save()
+
+        except Order.DoesNotExist:
+            pass
 
     return redirect("dashboard")
+@login_required
+def sync_cart(request):
+    data = json.loads(request.body)
+    cart_items = data.get("cart", [])
+
+    for item in cart_items:
+        product = Product.objects.get(id=item["id"])
+
+        cart, created = Cart.objects.get_or_create(
+            user=request.user,
+            product=product
+        )
+
+        if not created:
+            cart.quantity += item["quantity"]
+            cart.save()
+
+    return JsonResponse({"status": "success"})

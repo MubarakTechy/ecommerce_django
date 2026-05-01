@@ -658,6 +658,25 @@
             toggleIcon.classList.add('fa-eye');
         }
     }
+
+    window.onload = function () {
+    let cart = localStorage.getItem("cart");
+
+    if (cart) {
+        fetch("/sync-cart/", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "X-CSRFToken": getCookie("csrftoken")
+            },
+            body: JSON.stringify({
+                cart: JSON.parse(cart)
+            })
+        }).then(() => {
+            localStorage.removeItem("cart");
+        });
+    }
+};
 </script>
 
 </body>

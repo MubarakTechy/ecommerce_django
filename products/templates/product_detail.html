@@ -922,9 +922,10 @@
 
                 <!-- Action Buttons -->
                 <div class="action-buttons">
-                    <a href="{% url 'add_to_cart' product.id %}" class="btn-cart" id="addToCartBtn">
+                    <a onclick="addToCart({{ product.id }}, '{{ product.name }}', {{ product.price }})" href="{% url 'add_to_cart' product.id %}" class="btn-cart" id="addToCartBtn">
                         <i class="fas fa-shopping-cart"></i> Add to Cart
                     </a>
+                    
                     <a href="{% url 'order_product' product.id %}" class="btn-buy" id="buyNowBtn">
                         <i class="fas fa-bolt"></i> Buy Now
                     </a>
