@@ -22,7 +22,6 @@
             line-height: 1.5;
         }
 
-        /* Modern scrollbar */
         ::-webkit-scrollbar {
             width: 6px;
             height: 6px;
@@ -35,7 +34,6 @@
             border-radius: 10px;
         }
 
-        /* premium header styles */
         .top-bar {
             background: #0f172a;
             color: #e2e8f0;
@@ -116,7 +114,6 @@
             font-weight: 500;
         }
 
-        /* search bar premium */
         .search-bar {
             flex: 1;
             max-width: 520px;
@@ -177,7 +174,6 @@
             transform: translateY(-2px);
         }
 
-        /* mobile menu */
         .mobile-menu-toggle {
             display: none;
             background: #f1f5f9;
@@ -229,7 +225,6 @@
         }
         .overlay.active { display: block; }
 
-        /* category nav */
         .category-nav {
             background: white;
             border-bottom: 1px solid #eef2ff;
@@ -263,7 +258,6 @@
             padding: 0 32px;
         }
 
-        /* hero premium */
         .hero-banner {
             background: linear-gradient(115deg, #ffefe5 0%, #fff5ed 100%);
             border-radius: 36px;
@@ -339,7 +333,35 @@
             transition: 0.2s;
         }
 
-        /* product grid premium */
+        /* Search Results Counter */
+        .search-results-info {
+            background: white;
+            padding: 12px 20px;
+            border-radius: 50px;
+            margin-bottom: 20px;
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+        .clear-search-btn {
+            background: #f1f5f9;
+            border: none;
+            padding: 6px 16px;
+            border-radius: 40px;
+            cursor: pointer;
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: #ff6b35;
+            transition: 0.2s;
+        }
+        .clear-search-btn:hover {
+            background: #ff6b35;
+            color: white;
+        }
+
         .products-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
@@ -353,6 +375,9 @@
             border: 1px solid #eef2ff;
             cursor: pointer;
             position: relative;
+        }
+        .product-card.hidden-product {
+            display: none;
         }
         .product-card:hover {
             transform: translateY(-8px);
@@ -405,14 +430,6 @@
         .product-title:hover {
             color: #ff6b35;
         }
-        .rating {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            margin: 8px 0;
-        }
-        .stars { color: #fbbf24; font-size: 0.75rem; letter-spacing: 1px; }
-        .review-count { font-size: 0.7rem; color: #64748b; }
         .price {
             display: flex;
             align-items: baseline;
@@ -524,9 +541,9 @@
             padding: 70px 20px;
             background: white;
             border-radius: 48px;
+            grid-column: 1 / -1;
         }
 
-        /* footer premium */
         .footer {
             background: #0f172a;
             color: #cbd5e1;
@@ -546,7 +563,6 @@
         .footer-col p:hover { color: #ff6b35; }
         .copyright { text-align: center; padding-top: 40px; font-size: 0.7rem; border-top: 1px solid #1e293b; margin-top: 30px; }
 
-        /* Sort dropdown styles */
         .sort-container {
             display: flex;
             align-items: center;
@@ -622,8 +638,8 @@
             <a href="/"><h1>GlobalMart</h1><p>✨ Premium Selection</p></a>
         </div>
         <div class="search-bar">
-            <input type="text" placeholder="Search for gadgets, fashion, home..." id="searchInput">
-            <button id="searchBtn"><i class="fas fa-search"></i></button>
+            <input type="text" placeholder="🔍 Search for any product by name, category, or description..." id="searchInput">
+            <button id="searchBtn"><i class="fas fa-search"></i> Search</button>
         </div>
         <div class="header-icons">
             {% if user.is_authenticated %}
@@ -674,7 +690,7 @@
         <div class="hero-text">
             <div class="hero-badge"><i class="fas fa-fire"></i> UP TO 70% OFF</div>
             <h2>Big Ramadan Sales</h2>
-            <p style="margin-top: 8px;">Free delivery on orders over $40,000 + extra 10% cashback</p>
+            <p style="margin-top: 8px;">Free delivery on orders over $40 + extra 10% cashback</p>
             <button class="hero-btn" id="flashBtn">Grab Deals <i class="fas fa-arrow-right"></i></button>
         </div>
         <div><i class="fas fa-tags" style="font-size: 85px; color:#ff6b35; opacity: 0.3;"></i></div>
@@ -694,9 +710,12 @@
         </div>
     </div>
 
+    <!-- Search Results Info (dynamic) -->
+    <div id="searchResultsInfo" style="margin-bottom: 20px;"></div>
+
     <div class="products-grid" id="productGrid">
         {% for product in products|dictsort:"price" %}
-        <div class="product-card" data-product-id="{{ product.id }}" data-product-price="{{ product.price }}" data-product-name="{{ product.name }}">
+        <div class="product-card" data-product-id="{{ product.id }}" data-product-price="{{ product.price }}" data-product-name="{{ product.name|lower }}" data-product-description="{{ product.description|lower }}">
             <div class="product-image">
                 {% if product.old_price %}<span class="discount-badge">HOT DEAL</span>{% endif %}
                 {% if product.image %}
@@ -738,13 +757,24 @@
 </div>
 
 <script>
-    // mobile sidebar
+    // Mobile sidebar functionality
     const menuToggle = document.getElementById('mobileMenuToggle');
     const sidebar = document.getElementById('mobileSidebar');
     const overlayDiv = document.getElementById('overlay');
     const closeSidebarBtn = document.getElementById('closeSidebar');
-    function openSidebar() { sidebar.classList.add('open'); overlayDiv.classList.add('active'); document.body.style.overflow = 'hidden'; }
-    function closeSidebarFunc() { sidebar.classList.remove('open'); overlayDiv.classList.remove('active'); document.body.style.overflow = ''; }
+    
+    function openSidebar() { 
+        sidebar.classList.add('open'); 
+        overlayDiv.classList.add('active'); 
+        document.body.style.overflow = 'hidden'; 
+    }
+    
+    function closeSidebarFunc() { 
+        sidebar.classList.remove('open'); 
+        overlayDiv.classList.remove('active'); 
+        document.body.style.overflow = ''; 
+    }
+    
     if (menuToggle) menuToggle.addEventListener('click', openSidebar);
     if (closeSidebarBtn) closeSidebarBtn.addEventListener('click', closeSidebarFunc);
     if (overlayDiv) overlayDiv.addEventListener('click', closeSidebarFunc);
@@ -792,6 +822,9 @@
             } else {
                 showToast('❤️ Added to wishlist', false);
                 this.innerHTML = '<i class="fas fa-heart" style="color:#ff6b35;"></i>';
+                setTimeout(() => {
+                    if (this) this.innerHTML = '<i class="far fa-heart"></i>';
+                }, 1500);
             }
         });
     });
@@ -807,17 +840,115 @@
             } else {
                 showToast('✨ Item added to cart');
                 this.innerHTML = '<i class="fas fa-check"></i>';
-                setTimeout(() => this.innerHTML = '<i class="fas fa-shopping-cart"></i>', 1000);
+                setTimeout(() => {
+                    if (this) this.innerHTML = '<i class="fas fa-shopping-cart"></i>';
+                }, 1000);
             }
         });
     });
 
-    // Sorting functionality
+    // ========== SEARCH FUNCTIONALITY - WORKS WITH BACKEND PRODUCTS ==========
+    const searchInput = document.getElementById('searchInput');
+    const searchBtn = document.getElementById('searchBtn');
+    const productGrid = document.getElementById('productGrid');
+    const searchResultsInfo = document.getElementById('searchResultsInfo');
+    
+    function performSearch() {
+        const query = searchInput.value.trim().toLowerCase();
+        const allProducts = document.querySelectorAll('.product-card');
+        let visibleCount = 0;
+        let matchingProducts = [];
+        
+        // Hide/show products based on search match
+        allProducts.forEach(card => {
+            const productName = card.getAttribute('data-product-name') || '';
+            const productDesc = card.getAttribute('data-product-description') || '';
+            
+            if (query === '') {
+                card.classList.remove('hidden-product');
+                visibleCount++;
+            } else {
+                if (productName.includes(query) || productDesc.includes(query)) {
+                    card.classList.remove('hidden-product');
+                    visibleCount++;
+                    matchingProducts.push(card);
+                } else {
+                    card.classList.add('hidden-product');
+                }
+            }
+        });
+        
+        // Update search results info display
+        if (query !== '') {
+            searchResultsInfo.innerHTML = `
+                <div class="search-results-info">
+                    <i class="fas fa-search" style="color: #ff6b35;"></i>
+                    <span>🔍 Found <strong>${visibleCount}</strong> product(s) for "<strong>${escapeHtml(query)}</strong>"</span>
+                    <button class="clear-search-btn" id="clearSearchBtn"><i class="fas fa-times"></i> Clear Search</button>
+                </div>
+            `;
+            
+            const clearBtn = document.getElementById('clearSearchBtn');
+            if (clearBtn) {
+                clearBtn.addEventListener('click', () => {
+                    searchInput.value = '';
+                    performSearch();
+                    showToast('Search cleared - showing all products');
+                });
+            }
+        } else {
+            searchResultsInfo.innerHTML = '';
+        }
+        
+        // Show empty state if no results
+        let existingEmptyState = document.getElementById('searchEmptyState');
+        if (visibleCount === 0 && query !== '') {
+            if (!existingEmptyState) {
+                const emptyDiv = document.createElement('div');
+                emptyDiv.id = 'searchEmptyState';
+                emptyDiv.className = 'empty-state';
+                emptyDiv.style.gridColumn = '1 / -1';
+                emptyDiv.innerHTML = `
+                    <i class="fas fa-search" style="font-size: 3rem; opacity: 0.5; margin-bottom: 16px; display: inline-block;"></i>
+                    <h3 style="margin-bottom: 8px;">No products found</h3>
+                    <p>We couldn't find any products matching "<strong>${escapeHtml(query)}</strong>"</p>
+                    <p style="margin-top: 16px; color: #ff6b35;">Try different keywords or browse our categories above!</p>
+                `;
+                productGrid.appendChild(emptyDiv);
+            }
+        } else {
+            if (existingEmptyState) existingEmptyState.remove();
+        }
+        
+        // Auto-apply current sorting to maintain order
+        const currentSort = sortSelect ? sortSelect.value : 'price_asc';
+        sortProducts(currentSort);
+        
+        if (query !== '') {
+            showToast(`Found ${visibleCount} product(s) matching "${query}"`);
+        }
+    }
+    
+    function escapeHtml(str) {
+        if (!str) return '';
+        return str.replace(/[&<>]/g, function(m) {
+            if (m === '&') return '&amp;';
+            if (m === '<') return '&lt;';
+            if (m === '>') return '&gt;';
+            return m;
+        });
+    }
+    
+    // Sorting functionality (works with hidden products too)
     function sortProducts(sortType) {
         const grid = document.getElementById('productGrid');
         const cards = Array.from(document.querySelectorAll('.product-card'));
+        const emptyStateDiv = document.getElementById('searchEmptyState');
         
-        cards.sort((a, b) => {
+        // Only sort visible cards, but keep their order relative to each other
+        const visibleCards = cards.filter(card => !card.classList.contains('hidden-product'));
+        
+        visibleCards.sort((a, b) => {
             if (sortType === 'price_asc') {
                 const priceA = parseFloat(a.getAttribute('data-product-price') || 0);
                 const priceB = parseFloat(b.getAttribute('data-product-price') || 0);
@@ -838,10 +969,25 @@
             return 0;
         });
         
-        // Clear and re-append sorted cards
-        cards.forEach(card => grid.appendChild(card));
+        // Get all cards (hidden + visible) and reorder only the visible ones in the DOM
+        const allCards = Array.from(grid.querySelectorAll('.product-card:not(.empty-state-container)'));
+        const hiddenCards = allCards.filter(card => card.classList.contains('hidden-product'));
+        
+        // Clear grid but keep the empty state if exists
+        const emptyState = document.getElementById('searchEmptyState');
+        if (emptyState) emptyState.remove();
+        
+        // Remove all product cards
+        allCards.forEach(card => card.remove());
+        
+        // Append sorted visible cards first, then hidden ones
+        visibleCards.forEach(card => grid.appendChild(card));
+        hiddenCards.forEach(card => grid.appendChild(card));
+        
+        // Re-add empty state if needed
+        if (emptyState) grid.appendChild(emptyState);
     }
-
+    
     // Sort select event listener
     const sortSelect = document.getElementById('sortSelect');
     if (sortSelect) {
@@ -850,71 +996,52 @@
             showToast(`Sorted by: ${e.target.options[e.target.selectedIndex].text}`);
         });
     }
-
-    // search & filter
-    const searchInput = document.getElementById('searchInput');
-    const searchBtn = document.getElementById('searchBtn');
-    function filterProducts() {
-        const query = searchInput.value.trim().toLowerCase();
-        const cards = document.querySelectorAll('.product-card');
-        let visibleCount = 0;
-        cards.forEach(card => {
-            const title = card.querySelector('.product-title')?.innerText.toLowerCase() || '';
-            const desc = card.querySelector('.product-description')?.innerText.toLowerCase() || '';
-            if (title.includes(query) || desc.includes(query)) {
-                card.style.display = '';
-                visibleCount++;
-            } else {
-                card.style.display = 'none';
-            }
-        });
-        let noResultDiv = document.getElementById('noResults');
-        if (visibleCount === 0 && !noResultDiv) {
-            const emptyDiv = document.createElement('div');
-            emptyDiv.id = 'noResults';
-            emptyDiv.className = 'empty-state';
-            emptyDiv.innerHTML = '<i class="fas fa-search"></i><p>No matching products found</p>';
-            document.getElementById('productGrid').appendChild(emptyDiv);
-        } else if (visibleCount > 0 && noResultDiv) noResultDiv.remove();
+    
+    // Attach search event listeners
+    if (searchBtn) {
+        searchBtn.addEventListener('click', performSearch);
     }
-    if (searchBtn) searchBtn.addEventListener('click', filterProducts);
-    if (searchInput) searchInput.addEventListener('keyup', (e) => { if(e.key === 'Enter') filterProducts(); });
-
+    if (searchInput) {
+        searchInput.addEventListener('keyup', (e) => {
+            if (e.key === 'Enter') performSearch();
+        });
+    }
+    
+    // View All / Reset Search
     const viewAllLink = document.getElementById('viewAllLink');
     if (viewAllLink) {
         viewAllLink.addEventListener('click', (e) => {
             e.preventDefault();
             if (searchInput) searchInput.value = '';
-            document.querySelectorAll('.product-card').forEach(c => c.style.display = '');
-            const noRes = document.getElementById('noResults');
-            if (noRes) noRes.remove();
-            // Reset to price low to high when viewing all
+            performSearch();
             if (sortSelect) sortSelect.value = 'price_asc';
             sortProducts('price_asc');
-            showToast('Showing all products - Sorted by price: Low to High');
+            showToast('Showing all products');
         });
     }
-
+    
+    // Flash Deals button
     const flashBtn = document.getElementById('flashBtn');
     if (flashBtn) {
         flashBtn.addEventListener('click', () => {
-            // Sort by price low to high when clicking flash deals
             if (sortSelect) sortSelect.value = 'price_asc';
             sortProducts('price_asc');
             document.querySelector('.section-title').scrollIntoView({ behavior: 'smooth' });
             showToast('🔥 Showing best deals - Lowest prices first!');
         });
     }
-
+    
     // Product card click to go to detail page
     document.querySelectorAll('.product-card').forEach(card => {
         card.addEventListener('click', (e) => {
-            // Don't trigger if clicking on action buttons or their children
-            if(e.target.closest('.order-btn') || e.target.closest('.wishlist-btn') || e.target.closest('.cart-btn')) return;
+            if (e.target.closest('.order-btn') || e.target.closest('.wishlist-btn') || e.target.closest('.cart-btn')) return;
             const productLink = card.querySelector('.product-title');
-            if(productLink && productLink.href) window.location.href = productLink.href;
+            if (productLink && productLink.href) window.location.href = productLink.href;
         });
     });
+    
+    // Initial sorting
+    sortProducts('price_asc');
 </script>
 </body>
 </html>
